@@ -1,0 +1,19 @@
+\chapter{Evaluation}
+\section{Metrics}
+
+\subsection{MIN}
+For the open-ended task, \cite{VQA} uses following metrics
+\[ \mbox{accuracy} = \min (\frac{\mbox{\# humans that provided that answer}}{3}, 1)\]
+Thus if at least 3 workers provided the answer, then the answer is  100\% accurate.
+
+
+
+
+\section{Baselines}
+
+\subsection{per Q-type prior}
+For the open-ended task, pick the most popular answer per question type. \cite{VQA}
+
+\subsection{nearest neighbor}
+Given a test image, question pair, first find the $ K $ nearest neighbor questions and associated images from the training set. Then, for the open-ended task, pick the most frequent ground truth answer from this set of nearest neighbor question, image pairs.
+
