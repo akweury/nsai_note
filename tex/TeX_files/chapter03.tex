@@ -33,7 +33,6 @@ The output hidden state $ h_t $ is updated as
 The final hidden layer is taken as the representation vector for the question, i.e.
 \[v_Q = h_T\]
 
-
 \section{CNN}
 
 \begin{figure}[h!]
@@ -104,20 +103,79 @@ Given an intermediate feature map $ \textbf{F} \in \mathbb{R}^{C\times H \times 
 \end{equation} 
 where $ \otimes $ denotes element-wise multiplication.
 
-The channel attention module and spatial attention module are illustrated in figure \ref{fig:cbam-attention}. 
-\begin{figure}[h!]
-	\centering
-	\includegraphics[width=\linewidth]{img/cbam-attention}
-	\caption{Diagram of each attention sub-module.\cite{CBAM}}
-	\label{fig:cbam-attention}
-\end{figure}
+
 
 \subsection{Channel attention module}
-The channel attention module focus on what is meaningful given an input image. 
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=\linewidth]{img/channel-attention-module}
+	\caption{Diagram of channel attention module.\cite{CBAM}}
+	\label{fig:channel-attention}
+\end{figure}
+The channel attention module focus on \textbf{what} is meaningful given an input image. To compute it, we first squeeze the \textcolor{BrickRed}{spatial dimension} of the input feature map. \cite{CAM} suggest to use average-pooling to learn the extent of the target object. \cite{CBAM} argues that max-pooling can be used to gather distinctive object features. Thus paper \cite{CBAM} exploits both average-pooling and max-pooling operations to aggregate spatial information.
+$ \textbf{F}^c_{avg} $ denotes average-pooled features and $ \textbf{F}^c_{max} $ denotes max-pooled features. They are forwarded to a \textcolor{BrickRed}{shared network} (multi-layer perceptron (MLP)) to produce channel attention map $ \textbf{M}_c \in \mathbb{R}^{C\times 1\times 1} $. MLP has one hidden layer with hidden activation size $ \mathbb{R}^{C/r\times1\times1} $, where $ r $ is the reduction ratio.
+Formally, the channel attention is computed as 
+\begin{equation}
+	\begin{split}
+		\textbf{M}_c(\textbf{F}) &= \sigma(MLP(AvgPool(\textbf{F})) + MLP(MaxPool(\textbf{F})))\\
+		&= \sigma(\textbf{W}_1(\textbf{W}_0(\textbf{F}_{avg}^c))+\textbf{W}_1(\textbf{W}_0(\textbf{F}^c_{max})))
+	\end{split}
+\end{equation} 
+
+
+\subsection{Spatial attention module}
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=\linewidth]{img/spatial-attention-module}
+	\caption{Diagram of spatial attention module.\cite{CBAM}}
+	\label{fig:spatial-attention}
+\end{figure}
+The spatial attention focuses on \textbf{where} is an informative part. \cite{attention-transfer} shows that applying pooling operations along the channel axis is effective in highlighting informative regions.
+The spatial attention is computed as
+\begin{equation}
+	\begin{split}
+		\textbf{M}_s(\textbf{F}) &= \sigma(f^{7\times7} ([AvgPool(\textbf{F}); MaxPool(\textbf{F})]))\\
+		&= \sigma(f^{7\times 7}([\textbf{F}^s_{avg}; \textbf{F}^s_{max}]))
+	\end{split}
+\end{equation}
+where $ \sigma $ denotes the sigmoid function and $ f^{7\times 7} $ represents a convolution operation with the filter size $ 7\times 7. $
+
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=\linewidth]{img/cbam-with-resblock}
+	\caption{CBAM integrated with a ResBlock in ResNet.\cite{CBAM}}
+	\label{fig:cbam-with-resblock}
+\end{figure}
 
 
 
+\section{Binarized Neural Network}
 
+Let $ x^b $ be the binarized variable and $ x $ be the real-valued variable.. Deterministic binarization function
+\begin{equation}
+	\begin{split}
+		x^b = Sign(x) = 
+		\begin{cases}
+				+1 & if\ x\ge 0 \\
+				-1 & otherwise
+		\end{cases}
+	\end{split}
+\end{equation}
+Stochastic binarization function
+\begin{equation}
+	\begin{split}
+		x^b = \begin{cases}
+			+1 & \mbox{with probability}\ p =\sigma(x)\\
+			-1 & \mbox{with probability}\ 1-p
+		\end{cases}
+	\end{split}
+\end{equation}
+where $ \sigma  $ is the \textit{hard sigmoid} function
+\[\sigma(x) = \mbox{clip}(\frac{x+1}{2},0,1) = \max (0, \min(1,\frac{x+1}{2}))\]
+
+
+\cite{BNN}
 
 
 

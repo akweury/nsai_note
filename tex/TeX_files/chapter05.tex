@@ -1,0 +1,19 @@
+\chapter{Methods}
+
+\section{Straight-Through-Estimators}
+Straight-Through-Estimator (STE)\cite{STE} is used to estimate the gradients of a discrete function. The problem of discrete function is that its gradient is zero.
+An STE estimates (or in another word, substitute)  the gradient of a function to other values. For example\footnote{https://www.hassanaskary.com/python/pytorch/deep\%20learning/2020/09/19/intuitive-explanation-of-straight-through-estimators.html}
+, define a discrete function 
+\begin{equation}
+	\begin{split}
+		f(x) = \begin{cases}
+			1, & x > 0\\
+			0, & x\le 0
+		\end{cases}
+	\end{split}
+\end{equation}
+The derivative of $ f(x) $ is almost zero everywhere. Let's define an STE as
+\[ i(x) = x \]
+Then we use the derivative of $ i(x) $ as a substitution of the derivative of $ f(x) $. Thus the gradient of this discrete function $ f(x) $ is \textit{not} zero anymore, but equal to $ \frac{\partial i(x)}{\partial x} = 1 $ everywhere. 
+
+

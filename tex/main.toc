@@ -1,4 +1,6 @@
 \contentsline {chapter}{\numberline {1}The First Chapter}{1}{}%
+\contentsline {section}{\numberline {1.1}Main Task}{1}{}%
+\contentsline {section}{\numberline {1.2}Related Work}{1}{}%
 \contentsline {chapter}{\numberline {2}Dataset}{3}{}%
 \contentsline {section}{\numberline {2.1}CLEVR}{3}{}%
 \contentsline {paragraph}{Objects and Relationships}{3}{}%
@@ -11,15 +13,20 @@
 \contentsline {section}{\numberline {2.2}DAQUAR}{4}{}%
 \contentsline {section}{\numberline {2.3}COCO-QA}{5}{}%
 \contentsline {section}{\numberline {2.4}VQA}{5}{}%
+\contentsline {section}{\numberline {2.5}Image Net}{5}{}%
 \contentsline {chapter}{\numberline {3}Language Models}{7}{}%
 \contentsline {section}{\numberline {3.1}LSTM}{7}{}%
 \contentsline {section}{\numberline {3.2}CNN}{8}{}%
 \contentsline {section}{\numberline {3.3}Stacked Attention Networks (SAN)}{9}{}%
 \contentsline {section}{\numberline {3.4}Convolutional bottleneck attention module (CBAM)}{10}{}%
-\contentsline {subsection}{\numberline {3.4.1}Channel attention module}{12}{}%
-\contentsline {chapter}{\numberline {4}Evaluation}{13}{}%
-\contentsline {section}{\numberline {4.1}Metrics}{13}{}%
-\contentsline {subsection}{\numberline {4.1.1}MIN}{13}{}%
-\contentsline {section}{\numberline {4.2}Baselines}{13}{}%
-\contentsline {subsection}{\numberline {4.2.1}per Q-type prior}{13}{}%
-\contentsline {subsection}{\numberline {4.2.2}nearest neighbor}{13}{}%
+\contentsline {subsection}{\numberline {3.4.1}Channel attention module}{11}{}%
+\contentsline {subsection}{\numberline {3.4.2}Spatial attention module}{12}{}%
+\contentsline {section}{\numberline {3.5}Binarized Neural Network}{13}{}%
+\contentsline {chapter}{\numberline {4}Evaluation}{15}{}%
+\contentsline {section}{\numberline {4.1}Metrics}{15}{}%
+\contentsline {subsection}{\numberline {4.1.1}MIN}{15}{}%
+\contentsline {section}{\numberline {4.2}Baselines}{15}{}%
+\contentsline {subsection}{\numberline {4.2.1}per Q-type prior}{15}{}%
+\contentsline {subsection}{\numberline {4.2.2}nearest neighbor}{15}{}%
+\contentsline {chapter}{\numberline {5}Methods}{17}{}%
+\contentsline {section}{\numberline {5.1}Straight-Through-Estimators}{17}{}%
