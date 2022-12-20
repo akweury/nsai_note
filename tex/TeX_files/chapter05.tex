@@ -17,3 +17,111 @@ The derivative of $ f(x) $ is almost zero everywhere. Let's define an STE as
 Then we use the derivative of $ i(x) $ as a substitution of the derivative of $ f(x) $. Thus the gradient of this discrete function $ f(x) $ is \textit{not} zero anymore, but equal to $ \frac{\partial i(x)}{\partial x} = 1 $ everywhere. 
 
 
+\section{Rule Search Algorithm}
+\begin{algorithm}
+	\caption{Rule Search Algorithm} 
+	\begin{algorithmic}[1]
+		\State RulesSet $ \leftarrow $ $\phi$
+		\State PropExistRules $ \leftarrow $ $\phi$
+		\State VerticalPropCombRules $ \leftarrow $ $\phi$
+		\State HorizontalPropCombRules $ \leftarrow $ $\phi$
+		\For{propertyType $ A_i$ in $ A $}
+			\For {Object $ O_j $ in Image 1}
+				\For {propertyInstance $ b $ in $ a $}
+					\If { PropertyInstance[$ A_i $, $ O_j $] exists in all images}
+						\State  PropertyInstance[$ A_i $, $ O_j $].common $ \leftarrow $ True
+						\State PropExistRules[$ A_i $].append(PropertyInstance[$ A_i $, $ O_j $])
+					\Else
+						\State PropertyInstance[$ A_i $, $ O_j $].common  $\leftarrow $ False
+					\EndIf
+				\EndFor
+				\For {VertialComb(subset) $ v_k $  in PropExistRules[i]}
+					\If {$ c_k $ exist in all images}
+						\State VerticalPropCombRules[$ A_i $].append($ v_k $)
+					\EndIf
+				\EndFor
+			\EndFor
+		\EndFor
+		\For {Object $ O_j $ in image 1}
+			\For {HorizontalComb(subset) $ h_k $  in ExistProps of $ O_j $}
+				\If {$ h_k $ exist in all images}
+					\State HorizontalPropCombRules[$ O_i $].append($ h_k $)
+				\EndIf
+			\EndFor
+		\EndFor 
+		
+	\end{algorithmic} 
+\end{algorithm}
+
+
+
+
+%% brutal force
+\begin{algorithm}
+	\caption{Rule Search Algorithm} 
+	\begin{algorithmic}[1]
+		\State CommonSet $ \leftarrow \phi $ 
+		\State Rules $ \leftarrow \phi $ 
+		\State $ N $ images, $ M $ properties, image $ p $ has $ O_p $ objects 
+		\State $ A^{O_i \times M} $ denotes property matrix of image $ i $.
+		\For {each element $ p $ in $ A^{O_i \times M} $}
+			\If {If $ \texttt{CommonExist}(p) == True$}
+				\State $ p.common \leftarrow True $
+				\State CommonSet.append($ p $)
+			\Else 
+				\State $ p.common\leftarrow False $
+			\EndIf
+		\EndFor 
+		\For{a in range (1, CommonSet.length)}
+			\Statex SubCommonSet $ \leftarrow $ SubSet(CommonSet, a)
+			\For{element $ s $ in SubCommonSet}
+				\State result $\leftarrow$ $\texttt{check}$(s)
+				\If{result == true}
+					\State Rules.append(s)
+				\EndIf
+			\EndFor
+		\EndFor
+	\end{algorithmic} 
+\end{algorithm}
+
+
+\begin{algorithm}
+	\caption{CommonExist Algorithm} 
+	\begin{algorithmic}[1]
+		\State Description: Check if input property exist in every images
+		\State Input: property P
+		\For {each image i}
+			\If {P exists in image i}
+				\State \Return True
+			\Else 
+				\State \Return False
+			\EndIf
+		\EndFor
+	\end{algorithmic} 
+\end{algorithm}
+
+
+\begin{algorithm}
+	\caption{Check Algorithm} 
+	\begin{algorithmic}[1]
+		\State Description: Check if input exist in all images
+		\State Input: property set P := {$ p_1, p_2,..., p_k $}
+		\State CommonObjs O $ \leftarrow \phi $
+		\State Candidates $ \leftarrow \phi $ 
+		For $ o_j $ in image 1:
+			$ Candidate_Obj \leftarrow \phi $ 
+			For each property $ p $  of object $ o_j $
+				If $ p \in P $
+					type = $ p_i.type $
+					$ Candidate_Obj.append(p) $
+					$ o_j.p $ = true
+				Else
+					O.append($p_i.obj $)
+		
+		For each image i
+			For each $ Candidate_Obj $
+				If $ Candidate_Obj $ not in $ image_i.objs $
+					return False
+		return True
+	\end{algorithmic} 
+\end{algorithm}

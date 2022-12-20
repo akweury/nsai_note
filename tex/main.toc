@@ -30,3 +30,4 @@
 \contentsline {subsection}{\numberline {4.2.2}nearest neighbor}{15}{}%
 \contentsline {chapter}{\numberline {5}Methods}{17}{}%
 \contentsline {section}{\numberline {5.1}Straight-Through-Estimators}{17}{}%
+\contentsline {section}{\numberline {5.2}Rule Search Algorithm}{17}{}%
