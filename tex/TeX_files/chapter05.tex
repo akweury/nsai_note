@@ -67,22 +67,25 @@ Then we use the derivative of $ i(x) $ as a substitution of the derivative of $ 
 		\State CommonForAllRules $ \leftarrow \phi $ 
 		\State $ N $ images, $ M $ properties, image $ p $ has $ O_p $ objects 
 		\State $ A^{O_i \times M} $ denotes property matrix of image $ i $.
-		\For {each element $ p $ in $ A^{O_i \times M} $}
-			\If {$ \texttt{commonExist}(p) == True$}
-				\State $ p.commonExist \leftarrow True $
-				\State CommonExistSet.append($ p $)
-			\Else 
-				\State $ p.commonExist\leftarrow False $
-			\EndIf
-		\EndFor 
-		\For{a in range (1, CommonSet.length)}
-			\State SubCommonSet $ \leftarrow $ SubSet(CommonSet, a)
-			\For{element $ s $ in SubCommonSet}
-				\If{$\texttt{commonExistCheck}$(s) == true}
-					\State CommonExistRules.append(s) 
-				\EndIf
+		\For {propertyMatrix in each image}
+			\For {objProperties in propertyMatrix}
+				\For {each element $ p $ in $ A^{O_i \times M} $}
+					\If {$ \texttt{commonExist}(p) == True$}
+						\State $ p.commonExist \leftarrow True $
+						\State CommonExistSet.append($ p $)
+					\Else 
+						\State $ p.commonExist\leftarrow False $
+					\EndIf
+				\EndFor 
 			\EndFor
 		\EndFor
+		\State SubCommonSets $ \leftarrow \texttt{subSet}$(CommonSet)
+		\For{subCommonSet $ s $ in SubCommonSets}
+			\If{$\texttt{commonExistCheck}$(s) == true}
+				\State CommonExistRules.append(s) 
+			\EndIf
+		\EndFor
+
 	\end{algorithmic} 
 \end{algorithm}
 
@@ -109,18 +112,27 @@ Then we use the derivative of $ i(x) $ as a substitution of the derivative of $ 
 		\State Input: property set P :=  \{$ p_1, p_2,..., p_k $\}
 		\State CommonObjs O $ \leftarrow \phi $
 		\State Candidates $ \leftarrow \phi $ 
+		\State commonMatrix $ \leftarrow \phi $
 		\For {$ o_j $ in image 1}
-			\State $ Candidate_{o_j} \leftarrow \phi $ 
-			\For {each property $ p $  of object $ o_j $}
+			\State $ candidate_{o_j} \leftarrow \phi $ 
+			\For {property $ p $  in object $ o_j $}
 				\If {$ p \in P $}
 					% \State type = $ p_i.type $
-					\State $ Candidate_{o_j}.append(p) $
+					\State $ candidate_{o_j}.append(p) $
 				\EndIf
 			\EndFor 
+			\State commonMatrix.append($ candidate_{o_j}$)
 		\EndFor 
-		\For {each $ image_i $}
+		\For { $ image_i $ from 2nd to last image}
 			\For {each $ Candidate_{o_j} $}
-				\If {$ Candidate_{o_j} $ not in $ image_i.objs $}
+				\State exist $ \leftarrow $ False
+				\For{ obj in propertyMatrix of image i}
+					\If {$ Candidate_{o_j} \subset obj $}
+						\State exist $ \leftarrow $ True
+						\State propertyMatrix.remove(obj)
+					\EndIf
+				\EndFor 
+				\If{exist==False}
 					\State \Return False
 				\EndIf
 			\EndFor 
