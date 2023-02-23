@@ -16,6 +16,7 @@
 %% Minted listings support 
 %% Need pygment <http://pygments.org/> <http://pypi.python.org/pypi/Pygments>
 \usepackage{listings}
+\usepackage{subfigure}
 %% auto break lines
 \lstset{breaklines=true}
 
@@ -108,35 +109,276 @@ url=http://conceptbase.sourceforge.net/mjf/,
 
 \section{Introduction}
 
-CEUR-WS's article template provides a consistent \LaTeX{} style for
-use across CEUR-WS publications, and incorporates accessibility and
-metadata-extraction functionality. This document will explain the
-major features of the document class.
 
-If you are new to publishing with CEUR-WS, this document is a valuable
-guide to the process of preparing your work for publication.
+\section{Related Work}
 
-The ``\verb|ceurart|'' document class can be used to prepare articles
-for any CEUR-WS publication, and for any stage of publication, from
-review to final ``camera-ready'' copy with {\itshape very} few changes
-to the source.
 
-This class depends on the following packages
-for its proper functioning:
+\section{Target Map}
 
+
+
+\begin{figure*}[h]
+	\centering
+	\begin{minipage}{\textwidth}
+		\includegraphics[width=\linewidth]{img/pi_structure.png} 
+		\caption{Predicate invention workflow.}
+		\label{fig:pi-structure}
+	\end{minipage}
+\end{figure*}
+
+The goal of our work is to find a predicate invention pipeline so that some high level concepts are not necessarily given from reasoning language directly. But they can be invented as needed during training. The invention is important since it is a way to acquire new knowledge and shows the ability of intelligence. On the other hand, it improves the generalization of AI models for adapting unseen tasks. The invention model improves the system to describe the problem more accurate.
+
+%TODO: rewrite...
+However, the invention is still based on given background knowledge. It has to be simple, combinable,  and mutually compatible, so that the new concepts are various and accurate.
+
+In order to using a single language to cover two objects spatial relations as many as possible, we designed an area division map called \textit{target map}. As shown in figure \ref{fig:8-area}, the surrounding area according to the reference object has been divided into 8 sub-areas. 
+The areas in the target map are considered as background knowledge. The concepts like left, right, nearby supposed to be invented as new predicates during the training if any of them are needed to represent the target pattern in the positive images.  This map both considers the distance and directions of the latent relation objects. 
+Using the target map, multiple real-world related spatial concepts can be represented by combining some of atom areas, such as 
+\textit{left} (combining area 2,3,6,7), 
+\textit{right}(combining area 0,1,4,5), 
+\textit{nearby}(combining area 0,1,2,3) and so on. 
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.5\linewidth]{img/area_8.png} 
+	\caption{8-divide spatial area map with a clockwise naming.}
+	\label{fig:8-area}
+\end{figure}
+
+\newpage
+\section{Predicate Invention}
+The target of inductive logic programming is to find a target clause $ P $ for the positive patterns $ Q $ , such that the clause $ P $ describes some logical relations that exist and only exist in the positive patterns. 
+Thus the target clause $ P $ is sufficient and necessary for the positive patterns $ Q $.
+\[ P\Leftrightarrow Q \]
+
+\subsection{Clause generation loop.}
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=0.618\textwidth]{img/clause_invention_chart.png}
+	\caption{Clause Invention Chart.}
+	\label{fig:clause-invention-chart}
+\end{figure}
+
+Base on the scoring areas of the predicates, we can classify them into several groups, where $ N $ is the number of PN pairs.
 \begin{itemize}
-\item \verb|natbib.sty| for citation processing;
-\item \verb|geometry.sty| for margin settings;
-\item \verb|graphicx.sty| for graphics inclusion;
-\item \verb|hyperref.sty| optional package if hyperlinking is required in
-  the document;
-\item \verb|fontawesome5.sty| optional package for bells and whistles.
+	\item \textbf{Sufficient and Necessary Clause}: scores on $ (0,1) $ only, i.e. $ s_{01} =N$ They are sufficient and necessary for the target pattern.
+	\item \textbf{Necessary Clause}: scores on $ (0,1) $ and $ (1,1) $, i.e. $ s_{01} + s_{11} = N $. They are necessary for the target pattern. They always true in the positive images, but also can be true in negative images.
+	\item \textbf{Sufficient Clause}: scores on $ (0,0) $ and $ (0,1) $, i.e. $ s_{00}+s_{01} = N $. They represents the concepts that might appear in the positive image, but never in a negative image.
+	\item \textbf{Useless Clause}: Sometimes the clauses getting from cluster or extending can be useless.
 \end{itemize}
 
-All the above packages are part of any
-standard \LaTeX{} installation.
-Therefore, the users need not be
-bothered about downloading any extra packages.
+As shown in figure \ref{fig:clause-invention-chart}, we apply cluster and extend operations on the clauses to get a sufficient and necessary clause.
+
+\textbf{Sufficient Condition}: In order to find a sufficient clause, we can \textbf{extend} the beam search clauses with adding more predicates in the body, until it is sufficient.
+
+\textbf{Necessary Condition}: In order to invent a necessary predicate, we can \textbf{cluster} independent beam search clauses. Independent means the clauses do not share same predicates. This kind of predicates invent high level concepts. For example, cluster low level concept \textit{south}, \textit{east}, \textit{north}, \textit{west}, which are independent with each other, we can have a high level concept \textit{directions}.
+
+
+
+This invention approach may take several rounds. After each round, we check if any sufficient and necessary clauses have been generated, if there exist such, it is the target clause we want to find. If no such clauses, we take another round for clause searching.
+
+\subsection{Solving Kandinsky Patterns with PI}
+
+\begin{figure}[!htb]
+	\centering
+	\subfigure[Nearby]{\includegraphics[width=0.24\textwidth]{img/kp/nearby.png}} 
+	\subfigure[5 Online with a pair]{\includegraphics[width=0.24\textwidth]{img/kp/red_triangle.png}} 
+	\subfigure[Red triangle]{\includegraphics[width=0.24\textwidth]{img/kp/online_pair.png}}
+	\caption{Kandinsky Patterns. (a) blah (b) blah (c) blah (d) blah}
+	\label{fig:kandinsky-patterns}
+\end{figure}
+
+\subsubsection{Nearby}
+To solve the nearby pattern, we invent the concept $ inv\_pred\_1O\_1, O\_2 $ by cluster clauses, which actually represent the concept \textit{nearby}. It is necessary for the target patterns since it is true in all the positive images. It is also directly a sufficient predicate since no negative image has this pattern. The target clauses can be described as follows:
+\begin{align*}
+	target(X) :- & in(O_1,X),in(O_2,X), inv\_pred\_1(O_1,O_2).\\
+	inv\_pred\_1(O_1, O_2) :- 	& in(O_1,X), in(O_2,X), a\_0(O_1,O_2).\\
+	inv\_pred\_1(O_1, O_2) :- 	& in(O_1,X), in(O_2,X), a\_1(O_1,O_2).\\									
+\end{align*}
+
+\subsubsection{Red Triangle}
+To solve the red triangle pattern, we require the concept \textit{nearby} first by cluster clauses. It is necessary for the target patterns but not yet sufficient. Then we use beam search to extend this necessary clause with adding predicates, a sufficient and necessary clause is generated in several steps.
+\begin{align*}
+	target(X) :- & in(O_1,X),in(O_2,X), inv\_pred\_1(O_1,O_2), \\
+						& shape(O_1, triangle), color(O_1, red), \\
+						& diff\_shape\_pair(O_1,_O2), diff\_color\_pair(O_1,O_2)\\
+	\\
+	inv\_pred\_1(O_1, O_2) :- 	& in(O_1,X), in(O_2,X), a\_0(O_1,O_2).\\
+	inv\_pred\_1(O_1, O_2) :- 	& in(O_1,X), in(O_2,X), a\_1(O_1,O_2).\\		
+	inv\_pred\_1(O_1, O_2) :- 	& in(O_1,X), in(O_2,X), a\_2(O_1,O_2).\\																
+	inv\_pred\_1(O_1, O_2) :- 	& in(O_1,X), in(O_2,X), a\_3(O_1,O_2).\\									
+\end{align*}
+
+\subsubsection{Online-Pair}
+For online-pair patterns, five objects are align on a line, whereas two of them have the same color and same pair. 
+In this pattern, no necessary clauses can be found  by clustering predicates. Thus we have to extend the clauses using beam search, until it is sufficient. Then for the sufficient clauses that we have found, we perform clustering for necessity.
+
+A possible target clauses searching by predicate invention system is shown as follows
+\begin{align*}
+	target(X) :- & in(O_1,X),in(O_2,X),in(O_3,X),in(O_4,X),in(O_5,X) \\
+						& inv\_pred\_1(O_1,O_2,O_3,O_4,O_5)\\
+			 			\\
+		inv\_pred\_1(O_1,O_2,O_3,O_4,O_5) :- 	& in(O_1,X),in(O_2,X),in(O_3,X),in(O_4,X),in(O_5,X) \\
+																				& a\_0(O_4,O_1),a\_2(O_2,O_1), same\_shape\_pair(O_2,O_4)\\
+	inv\_pred\_1(O_1,O_2,O_3,O_4,O_5) :- 	& in(O_1,X),in(O_2,X),in(O_3,X),in(O_4,X),in(O_5,X) \\
+																			& a\_2(O_2,O_5),a\_2(O_5,O_3),color(O_3, blue)\\
+	inv\_pred\_1(O_1,O_2,O_3,O_4,O_5) :- 	& in(O_1,X),in(O_2,X),in(O_3,X),in(O_4,X),in(O_5,X) \\
+																			& a\_3(O_2,O_1),a\_3(O_4,O_2),a\_3(O_5,O_4)\\
+																			\\
+	inv\_pred\_2(O_1,O_2,O_3,O_4,O_5) :- 	& in(O_1,X),in(O_2,X),in(O_3,X),in(O_4,X),in(O_5,X) \\
+																			& a\_0(O_4,O_1),a\_2(O_2,O_1),same\_shape\_pair(O_2,O_4)\\
+	inv\_pred\_2(O_1,O_2,O_3,O_4,O_5) :- 	& in(O_1,X),in(O_2,X),in(O_3,X),in(O_4,X),in(O_5,X) \\
+																			& a\_1(O_3,O_1),a\_3(O_2,O_4),same\_color\_pair(O_2,O_4)\\																			
+	inv\_pred\_2(O_1,O_2,O_3,O_4,O_5) :- 	& in(O_1,X),in(O_2,X),in(O_3,X),in(O_4,X),in(O_5,X) \\
+																			& a\_2(O_2,O_5),a\_2(O_5,O_3),color(O\_3, blue)\\
+	inv\_pred\_2(O_1,O_2,O_3,O_4,O_5) :- 	& in(O_1,X),in(O_2,X),in(O_3,X),in(O_4,X),in(O_5,X) \\
+																			& a\_3(O_2,O_1),a\_3(O_4,O_2),a\_3(O_5,O_4)\\																			
+\end{align*}
+
+Note that the predicate $ inv\_pred\_1(O_1,O_2,O_3,O_4,O_5) $ share the same bodies $ same\_shape\_pair(O_1,O_2), same\_color\_pair(O_1,O_2) $, which corresponds the concept $ five\_object\_on\_the\_same\_line\_with\_one\_pair\_of\_same\_color\_and\_shape\_objects $. We can remove shared bodies in the clause definition. Then the predicate corresponds a simpler concept $ five\_object\_on\_the\_same\_line $, which is a necessary predicate. It becomes sufficient after adding the deleted predicate back to. Removing shared bodies is not necessary but it can simplify the corresponding concepts of invented predicates. 
+ 
+\subsection{Evaluation by Sufficiency}
+The invented predicates can be sufficient for positive patterns, which equivalent to the target predicate as well. Once we have found a sufficient predicate for the positive patterns, we are done. Thus it is desirable for the task. 
+However, for searching complicate target patterns, the sufficient predicates usually cannot be invented in one step. Instead, they need other invented predicates as prerequisites. In this case, these prerequisite predicates are necessary for sufficient predicates. Thus they are supposed to be invented beforehand and used for sufficient predicate invention.
+
+\subsection{Evaluation by Necessity} 
+% Invented predicates, on the contrary to the target predicate, should be \textit{necessary} for positive patterns. 
+ Necessary evaluation keeps predicates those are true in all positive patterns. They can be insufficient, thus they can also be true in negative patterns. Necessary predicates are invented as prerequisite for sufficient predicate invention.
+The necessity guarantees the searching for invented predicates is controlled in a proper scale, since only limited necessary conditions exist in the positive patterns. 
+If we loose the necessity assumption, the searching domain for invented predicates can be huge since the conditions that doesn't exist in the positive patterns are irregular and  countless. 
+However, searching for some that necessary for the majority of positive patterns is reasonable. In this paper, we apply the necessity condition only for all the positive patterns.% TODO: check this limition.
+
+
+
+\subsection{Invented Clause Evaluation}
+
+
+Invented predicates are trivial if they are necessary for both positive and negative patterns. 
+
+A partial strict positive predicate 
+During evaluation, only predicates which evaluate all the PN pairs as general positive and the number of strict positive PN pairs is more than half are kept. The 
+They don't reduce the searching domain for the target predicate invention.  
+Instead of evaluate on images  one by one. 
+We can take a pair of positive and negative image 
+
+
+\begin{figure*}[h]
+	\centering
+	\begin{minipage}{\textwidth}
+	\includegraphics[width=\linewidth]{img/PN_pair_4.png} 
+	\caption{PN pair.}
+	\label{fig:pn-pair}
+	\end{minipage}
+\end{figure*}
+
+
+Each PN-pair consists of one positive image and one negative image. For a pair of image, its
+
+\begin{figure*}[h]
+	\centering
+	\begin{minipage}{\textwidth}
+		\includegraphics[width=\linewidth]{img/4_zone_heat_explain.png} 
+		\caption{PN pair.}
+		\label{fig:4-zone-heat-explain}
+	\end{minipage}
+\end{figure*}
+
+
+
+
+
+\section{Inference Result}
+
+\begin{figure*}[h]
+	\centering
+	\begin{minipage}{.3\textwidth}
+		\includegraphics[width=\textwidth]{img/mce/mce-0.png}
+		\caption{Caption}\label{label-a}
+	\end{minipage}
+	\begin{minipage}{.3\textwidth}
+		\includegraphics[width=\textwidth]{img/mce/mce-1.png}
+		\caption{Caption}\label{label-b}
+	\end{minipage}
+	\begin{minipage}{.3\textwidth}
+		\includegraphics[width=\textwidth]{img/mce/mce-2.png}
+		\caption{Caption}\label{label-c}
+	\end{minipage}
+	\begin{minipage}[b]{.3\textwidth}
+		\includegraphics[width=\textwidth]{img/mce/mce-3.png}
+		\caption{Caption}\label{label-d}
+	\end{minipage}
+	\begin{minipage}[b]{.3\textwidth}
+		\includegraphics[width=\textwidth]{img/mce/mce-4.png}
+		\caption{Caption}\label{label-e}
+	\end{minipage}
+	\begin{minipage}[b]{.3\textwidth}
+		\includegraphics[width=\textwidth]{img/mce/mce-5.png}
+		\caption{Caption}\label{label-f}
+	\end{minipage}
+	\begin{minipage}[b]{.3\textwidth}
+		\includegraphics[width=\textwidth]{img/mce/mce-6.png}
+		\caption{Caption}\label{label-g}
+	\end{minipage}
+	\begin{minipage}[b]{.3\textwidth}
+		\includegraphics[width=\textwidth]{img/mce/mce-7.png}
+		\caption{Caption}\label{label-h}
+	\end{minipage}
+	\begin{minipage}[b]{.3\textwidth}
+		\includegraphics[width=\textwidth]{img/mce/mce-8.png}
+		\caption{Caption}\label{label-i}
+	\end{minipage}
+	\caption{Pipeline of NSFR with PI module.}
+	\label{fig:mce}
+\end{figure*}
+
+
+
+Think about "How" to cluster the existing clauses. Simply cluster all the clauses as one single concept cannot handle complicate rules.
+
+If NSFR gives following clauses, then which of those clauses should be clustered as the new concept?
+
+If there is a pattern with multiple rules,
+a iteration-based approach should be proposed.
+First several iteration, it should be able to learn some new predicates, then use new predicates to describe the new scenarios.
+
+New predicate has to be able to 100\% describe the positive images. Otherwise, reconsider it.
+
+\begin{align*}
+	target(X,Y) &\leftarrow atArea0(X,Y), atArea2(Y,X)  \\
+	target(X,Y) &\leftarrow atArea1(X,Y),atArea3(Y,X) \\
+	target(X,Y) &\leftarrow atArea1(X,Y) \\    
+	target(X,Y) &\leftarrow atArea2(X,Y) \\    
+	target(X,Y) &\leftarrow atArea4(X,Y),atArea6(Y,X) \\
+	target(X,Y) &\leftarrow atArea5(X,Y),atArea7(Y,X) \\
+	target(X,Y) &\leftarrow atArea5(X,Y) \\    
+	target(X,Y) &\leftarrow atArea6(X,Y) \\
+	target(X,Y) &\leftarrow pred1(X,Y) \\
+\end{align*}
+
+
+
+
+\subsection{Chaining}
+\cite{dILP} supports predicate invention.
+
+
+\section{Experiments}
+
+Using the baseline $\alpha$ILP, the nearby concept test accuracy is upto xxx, after xxx iterations.
+\begin{table}
+	\caption{PI Evaluation Result}
+	\label{tab:nearby-pi-result}
+	\begin{tabular}{ccccc}
+		\toprule
+		Module & Red-Triangle & Nearby & Online & Two Pairs\\
+		\midrule
+		$\alpha$ILP 		&      0.90 	& 	1.0	& 		& 0.95 \\
+		$\alpha$ILP + PI &  	0.96 	& 	1.0	& 		& \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
 
 \section{Modifications}
 
@@ -472,6 +714,41 @@ also include a description suitable for screen readers, to
 assist the visually-challenged to better understand your work.
 
 Figure captions are placed below the figure.
+
+
+\section{Introduction}
+
+CEUR-WS's article template provides a consistent \LaTeX{} style for
+use across CEUR-WS publications, and incorporates accessibility and
+metadata-extraction functionality. This document will explain the
+major features of the document class.
+
+If you are new to publishing with CEUR-WS, this document is a valuable
+guide to the process of preparing your work for publication.
+
+The ``\verb|ceurart|'' document class can be used to prepare articles
+for any CEUR-WS publication, and for any stage of publication, from
+review to final ``camera-ready'' copy with {\itshape very} few changes
+to the source.
+
+This class depends on the following packages
+for its proper functioning:
+
+\begin{itemize}
+	\item \verb|natbib.sty| for citation processing;
+	\item \verb|geometry.sty| for margin settings;
+	\item \verb|graphicx.sty| for graphics inclusion;
+	\item \verb|hyperref.sty| optional package if hyperlinking is required in
+	the document;
+	\item \verb|fontawesome5.sty| optional package for bells and whistles.
+\end{itemize}
+
+All the above packages are part of any
+standard \LaTeX{} installation.
+Therefore, the users need not be
+bothered about downloading any extra packages.
+
+
 
 \section{Citations and Bibliographies}
 
