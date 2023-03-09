@@ -19,7 +19,8 @@
 \usepackage{subfigure}
 %% auto break lines
 \lstset{breaklines=true}
-
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{definition}{Definition}[section]
 %%
 %% end of the preamble, start of the body of the document source.
 \begin{document}
@@ -39,7 +40,7 @@
 
 %%
 %% The "title" command
-\title{Neural Predicate Invention from Visual Scenes}
+\title{Neural-Symbolic Predicate Invention: \\Learning Relational Concepts from Visual Scenes}
 
 \tnotemark[1]
 \tnotetext[1]{You can use this document as the template for preparing your
@@ -84,22 +85,16 @@ url=http://conceptbase.sourceforge.net/mjf/,
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-  A clear and well-documented \LaTeX{} document is presented as an
-  article formatted for publication by CEUR-WS in a conference
-  proceedings. Based on the ``ceurart'' document class, this article
-  presents and explains many of the common variations, as well as many
-  of the formatting elements an author may use in the preparation of
-  the documentation of their work.
+The predicates used for Inductive Logic Programming (ILP) systems are typically elusive and need to be hand-crafted in advance limiting the generalization of the system when learning new rules without sufficient background knowledge. Predicate Invention (PI) for ILP is the problem of discovering new concepts that describe hidden relationships in the domain. PI can mitigate the generalization problem by inferring new concepts such that the system gains better vocabularies to compose logic rules to solve problems. Although several PI approaches for symbolic ILP systems exist, PI for NeSy ILP systems, which can deal with visual inputs to learn logic rules using differentiable reasoning, is relatively unaddressed. To this end, we propose a neural-symbolic approach to invent predicates from visual scenes for NeSy ILP systems based on clustering and extension of relational concepts. Our NeSy PI model handles visual scenes as its input using deep neural networks for the visual perception, and invents new concepts which are useful to solve the task of classifying complex visual scenes. The invented concepts can be used by NeSy ILP systems instead of hand-crafted background knowledge. Our experiments show that the PI model is capable of inventing high-level concepts and solving complex visual logical patterns. Moreover, the invented concepts are explainable and interpretable while also providing competitive results with the state of the art NeSy ILP systems with given knowledge.
 \end{abstract}
 
 %%
 %% Keywords. The author(s) should pick words that accurately describe
 %% the work being presented. Separate the keywords with commas.
 \begin{keywords}
-  LaTeX class \sep
-  paper template \sep
-  paper formatting \sep
-  CEUR-WS
+	Predicate Invention \sep
+	Inductive Logic Programming \sep
+	Neural Symbolic Artificial Intelligence\sep
 \end{keywords}
 
 %%
@@ -110,11 +105,85 @@ url=http://conceptbase.sourceforge.net/mjf/,
 \section{Introduction}
 
 
-\section{Related Work}
+Neural Symbolic Inductive Logical Programming (NeSy-ILP) learns logical programs from images. 
+Such learned program sences the inherent logic in the Visual Scenes and consider them as rules for classification task.  An example of such patterns is shown in figure \ref{fig:intro-hide}. In order to solve such patterns, a set of predicates are required, for example $\mathtt{blue\_sphere} $ defines the existence of a sphere with color blue. 
 
+However, to describe logical relations, these predicates in NeSy-ILP systems are either given as pretrained neural predicates or as hand-crafted background knowledge. 
+If any background knowledge or predicates are incorrect or unprovided, the optimal program searching can be failed. Thus it is essential for system to conquer the problem of depending of given knowledge but generate new language by itself. Besides, background knowledge can be hard to collect and usually provided by human experts, which limits the applying domain of ILP systems.
+
+Predicate invention(PI)\cite{pi1988} is one direction to solve this problem, which is also a sub-problem in ILP. It works for ILP system to invent new predicates as symbols for new concepts based on well designed basic predicates, which enlarge the expression of the language in ILP. In our example, the concept $ \mathtt{blue\_sphere} $ is given as BK knowledge, but with PI system, such concepts are learned from separate basic concepts $ \mathtt{blue} $ and $ \mathtt{sphere} $. However, most ILP system doesn't support PI, since it is hard to define when and how to generate new predicates. 
+
+%% Tell some reasons if possible
+
+\begin{figure*}[h]
+	\centering
+	\begin{minipage}{0.4\textwidth}
+		\centering
+		\includegraphics[width=0.3\linewidth]{img/intro_hide/true1.png} 
+		\includegraphics[width=0.3\linewidth]{img/intro_hide/true2.png} 
+		\includegraphics[width=0.3\linewidth]{img/intro_hide/true3.png} 
+		
+		\includegraphics[width=0.3\linewidth]{img/intro_hide/false1.png} 
+		\includegraphics[width=0.3\linewidth]{img/intro_hide/false2.png}
+		\includegraphics[width=0.3\linewidth]{img/intro_hide/false3.png}
+		\label{fig:intro-hide}
+		\end{minipage}
+		\begin{minipage}{0.55\textwidth}
+			\centering
+			\includegraphics[width=\linewidth]{img/intro_hide/intro_bk.png} 
+			\label{fig:intro-bk}
+		\end{minipage}
+			\caption{A logic Pattern in 3D scenes can be learned by Neural-Symbolic ILP system. Positive images on the first row, negative images on the second row. The truth pattern is: a blue sphere either locate on the left side of a green sphere or locate on the right side of a green cube.}
+\end{figure*}
+
+Either placed on the side 
+
+
+We propose a neural-symbolic PI approach based on \textit{clustering} and \textit{extension} of relational concepts, which is able to reasoning visual scenes without background knowledge. The knowledge can be summarized from scenes. It evaluates the clauses based on its characteristics of necessity and sufficiency. The procedure is repeated iteration by iteration, until the target clauses are found. We tested our approach on both 2D and 3D image patterns.
+
+Comparing to existing approaches, our approach has following contributions
+
+\begin{itemize}
+	\item We proposed a predicate invention approach for neural symbolic ILP system.
+	\item A formalized way to efficiently evaluate the clauses in visual scenes, which can be further used for pruning.
+	\item We discussed about \textit{when} and \textit{how} to invent new predicates based on \textit{necessary} and \textit{sufficient} judgment factors.
+	\item The implementation.
+	
+\end{itemize}
+
+
+
+
+
+\section{Background and Related Work}
+
+Although predicate invention has been proposed since 1988 by \cite{MUGGLETON1988339}, it is always be considered as a major challenge. Most ILP system do not supports PI, including classic systems like Progol \cite{Muggleton1995InverseEA}, TILDE\cite{BLOCKEEL1998285} and modern system such as ATOM \cite{atom}, LFIT \cite{LFIT}.
+
+Some works have been proposed for PI systems. However, none of these are focus on visual images and learning logical patterns existing in the visual scenes. 
+\cite{pilff} is an approach for predicate invention, which generate constrains from inconsistent hypothesis and further be used for pruning all the similar clauses. \cite{gtnpi} use negation with PI to generalize the clause, which follows a bottom-top direction 
+Several system uses \cite{Evans2018}, \cite{kaminski_eiter_inoue_2018} meta-rules as templates for new predicates invention. 
+
+$ \alpha $ILP (citation?) supports visual image as input but require background knowledge during the reasoning.
+
+
+ 
+ 
 
 \section{Target Map}
 
+Collect the facts from group of visual scenes and induce the common properties from the facts are 
+can answer the question, why they are in the same group. However, common properties sometimes can be not obviously and hard to be described.
+and using a single word  to summarize it to a suitable new concept is one of powerful ability of human-being. It simplifies the description of complex 
+Predicate invention is an essential ability for ILP system to reasoning about 
+
+\begin{figure*}[h]
+	\centering
+	\begin{minipage}{\textwidth}
+		\includegraphics[width=\linewidth]{img/intro_compare.png} 
+		\caption{Predicate invention workflow.}
+		\label{fig:Pipeline comparison between neural symbolic-ILP system without PI module and with PI module.}
+	\end{minipage}
+\end{figure*}
 
 
 \begin{figure*}[h]
@@ -138,58 +207,142 @@ Using the target map, multiple real-world related spatial concepts can be repres
 \textit{right}(combining area 0,1,4,5), 
 \textit{nearby}(combining area 0,1,2,3) and so on. 
 
-\begin{figure}
-	\centering
-	\includegraphics[width=0.5\linewidth]{img/area_8.png} 
-	\caption{8-divide spatial area map with a clockwise naming.}
-	\label{fig:8-area}
-\end{figure}
-
 \newpage
 \section{Predicate Invention}
+
+
 The target of inductive logic programming is to find a target clause $ P $ for the positive patterns $ Q $ , such that the clause $ P $ describes some logical relations that exist and only exist in the positive patterns. 
 Thus the target clause $ P $ is sufficient and necessary for the positive patterns $ Q $.
 \[ P\Leftrightarrow Q \]
 
-\subsection{Clause generation loop.}
 
-\begin{figure}[!htb]
-	\centering
-	\includegraphics[width=0.618\textwidth]{img/clause_invention_chart.png}
-	\caption{Clause Invention Chart.}
-	\label{fig:clause-invention-chart}
-\end{figure}
+\begin{definition}[PN pair]
+	A pair of positive and negative images.
+\end{definition}
+%TODO: tell the way of clause generation
+We prepare equal number of positive and negative images for evaluation, thus all the images can be paired from two groups.
+A new generated clause is evaluated on all the PN pairs. Evaluation on each pair getting two values, one from positive and one from negative. 
+ We can take negative value as x axis, positive value as y axis and draw all the evaluation result on a coordinate system. Thus each PN pair corresponds a point. We observed these points are only appears in the four clusters in the coordinate system( as show in figure \ref{fig:mce-example} left.), thus we fuzzy these points to only four areas (we use $ f(P) $ to represent this step, where $ P $ is the points on the whole dataset.), each take one cluster. Thus for these two values, we only have $ 2^2=4 $ different combinations. We named it as \textit{four score map}.  
+ 
+ \begin{figure*}[h]
+ 	\centering
+ 	\begin{minipage}{\textwidth}
+ 		\includegraphics[width=\linewidth]{img/four_zone_explain.png} 
+ 		\caption{\textbf{Left}: PN pairs. \textbf{Middle}: PN pair scores on coordinate system. The points are clustered in four corners. These scores are evaluated by NSFR. \textbf{Right:}Four Score Map. The four score map illustrates the result of 4 kinds of evaluation on one clause, i.e. high positive-high negative, high positive-low negative, low positive-high negative, low positive-low negative. }
+ 		\label{fig:pn-pair}
+ 	\end{minipage}
+ \end{figure*}
+ 
+ A \textbf{four score map} fuzzy the evaluation result on an image to positive 1 and negative 0, map the positive image result and negative image result to four areas, namely $ (0,0), (0,1), (1,0) $ and $ (1,1) $. We found that four score map has good description for sufficient and necessary conditions in logic.
 
-Base on the scoring areas of the predicates, we can classify them into several groups, where $ N $ is the number of PN pairs.
-\begin{itemize}
-	\item \textbf{Sufficient and Necessary Clause}: scores on $ (0,1) $ only, i.e. $ s_{01} =N$ They are sufficient and necessary for the target pattern.
-	\item \textbf{Necessary Clause}: scores on $ (0,1) $ and $ (1,1) $, i.e. $ s_{01} + s_{11} = N $. They are necessary for the target pattern. They always true in the positive images, but also can be true in negative images.
-	\item \textbf{Sufficient Clause}: scores on $ (0,0) $ and $ (0,1) $, i.e. $ s_{00}+s_{01} = N $. They represents the concepts that might appear in the positive image, but never in a negative image.
-	\item \textbf{Useless Clause}: Sometimes the clauses getting from cluster or extending can be useless.
-\end{itemize}
+Base on the scoring areas of the predicates, we can classify them into several groups. Let $ N $ denotes the number of PN pairs.
 
-As shown in figure \ref{fig:clause-invention-chart}, we apply cluster and extend operations on the clauses to get a sufficient and necessary clause.
+\begin{definition}[Sufficient and Necessary Clause]
+	Scores on $ (0,1) $ only, i.e. $ s_{01} =N$ They are sufficient and necessary for the target pattern.
+\end{definition}
 
-\textbf{Sufficient Condition}: In order to find a sufficient clause, we can \textbf{extend} the beam search clauses with adding more predicates in the body, until it is sufficient.
+\begin{definition}[Necessary Clause]
+	Scores on $ (0,1) $ and $ (1,1) $, i.e. $ s_{01} + s_{11} = N $. They are necessary for the target pattern. Note that they always true in the positive images, but also can be true in negative images.
+\end{definition}
 
-\textbf{Necessary Condition}: In order to invent a necessary predicate, we can \textbf{cluster} independent beam search clauses. Independent means the clauses do not share same predicates. This kind of predicates invent high level concepts. For example, cluster low level concept \textit{south}, \textit{east}, \textit{north}, \textit{west}, which are independent with each other, we can have a high level concept \textit{directions}.
+\begin{definition}[Sufficient Clause]
+	Scores on $ (0,0) $ and $ (0,1) $, $ s_{00}+s_{01} = N $ and $ s_{01}>0 $. It induces directly some of positive patterns but can be failed on some other positive patterns. It never induces any negative patterns.
+\end{definition}
+
+The key idea of these definitions is to find a way to provide promising clauses for extension or clustering. Since it is impossible to extended every clauses and check its score, or try to cluster any number of existing clauses. Thus a prune strategy is required for promising clause generation. We consider necessary clauses and sufficient clauses as promising clauses. For each iteration of clause generation, we extend only these two kinds of clauses, which can significantly reduce the number of new clauses, whereas the rest clauses are pruned. In the PI section, the new predicates are acquired by clustering of same type of clauses, i.e. they are either clustered from necessary clauses only or from sufficient clauses only.
 
 
 
-This invention approach may take several rounds. After each round, we check if any sufficient and necessary clauses have been generated, if there exist such, it is the target clause we want to find. If no such clauses, we take another round for clause searching.
 
-\subsection{Solving Kandinsky Patterns with PI}
+\subsection{Clause Generation by Extension}
+We getting new clauses by extend the existing clauses with knowing predicates in the language. In every experiment, the clause extension starting from the most general one, i.e. $ \mathtt{target(X):-in(O1,X),in(O2,X).} $, whereas the number of predicate $ in(O,X) $ depends on the related object number in the ground truth pattern. Assume there are $ 10 $ predicates exist in the language, to extend one predicate from initial clause can acquire 10 new clauses, to extend 2 predicates can acquire $ 10^2=100 $, and so on. For complicate patterns, the target clauses can require more than 5 predicates or more, thus a prune strategy is necessary during clause extension. We select the clauses those are either necessary or sufficient, which can significantly reduce the number of new clauses after extension.
+\begin{align*}
+	\mathtt{intermediate\_clause(Tree,Road)&:-left(Tree,Road)} 	\\
+\end{align*}
+
+\subsection{Predicate Invention by Clustering}
+New predicate invention happens after new clause generation. We acquire new predicates by clustering necessary clauses or sufficient clauses. The new predicates take clustered clauses as their bodies, where clauses in the cluster are considered with $ or $ relation. Clustering can take rules with sub-independent cases into account. For example, a tree placed either on the left side of the road or on the right side of the road can be represented by following predicates
+
+\begin{align*}
+	\mathtt{inv\_pred(Tree,Road)&:-left(Tree,Road)} 	\\
+	\mathtt{inv\_pred(Tree,Road)&:-right(Tree, Road)}
+\end{align*}
+To evaluate new predicates, we extent the initial clause with new predicates and evaluate them by four score map. If the new clause is necessary or  sufficient, the corresponding predicate is kept, otherwise it is pruned.
+
+
+
+
+
+\section{Experiments}
+To solve Kandinsky patterns, we provide following constants as background knowledge, 
+shape: circle, square, triangle; color: red, yellow, blue; group\_shape: line, unknown; distance: every 25 pixels as one unit. Besides, no further information is given, such as different color, different shape, etc. Some of the patterns are shown in figure \ref{fig:kandinsky-patterns}.
 
 \begin{figure}[!htb]
 	\centering
 	\subfigure[Nearby]{\includegraphics[width=0.24\textwidth]{img/kp/nearby.png}} 
-	\subfigure[5 Online with a pair]{\includegraphics[width=0.24\textwidth]{img/kp/red_triangle.png}} 
-	\subfigure[Red triangle]{\includegraphics[width=0.24\textwidth]{img/kp/online_pair.png}}
-	\caption{Kandinsky Patterns. (a) blah (b) blah (c) blah (d) blah}
+	\subfigure[Two pairs]{\includegraphics[width=0.24\textwidth]{img/kp/twopairs.png}} 
+	\subfigure[Red Triangle]{\includegraphics[width=0.24\textwidth]{img/kp/red_triangle.png}} 
+	\subfigure[5 Objects Online ]{\includegraphics[width=0.24\textwidth]{img/kp/online_pair.png}}
+	\caption{Kandinsky Patterns.}
 	\label{fig:kandinsky-patterns}
 \end{figure}
 
-\subsubsection{Nearby}
+
+Learning result of red-triangle pattern is shown as follows:
+
+\begin{lstlisting}[language=Prolog, mathescape]
+	target(X):-in(O1,X),in(O2,X),inv_pred25(O1,O2).
+	inv_pred0(O1,O2):-in(O1,X),in(O2,X),rho(O1,O2,rho2),shape(O1,circle).
+	inv_pred0(O1,O2):-in(O1,X),in(O2,X),rho(O1,O2,rho2),shape(O1,square).
+	inv_pred25(O1,O2):-color(O1,red),color(O2,blue),in(O1,X),in(O2,X),inv_pred0(O2,O1),shape(O1,triangle).
+	inv_pred25(O1,O2):-color(O1,red),color(O2,yellow),in(O1,X),in(O2,X),inv_pred0(O2,O1),shape(O1,triangle).
+	inv_pred25(O1,O2):-color(O1,red),color(O2,yellow),in(O1,X),in(O2,X),inv_pred0(O2,O1),shape(O2,circle).
+\end{lstlisting}\\
+
+
+
+The performance on each patterns in Kandinsky pattern is shown as follows:
+\begin{table}
+	\caption{PI Evaluation Result}
+	\label{tab:nearby-pi-result}
+	\begin{tabular}{ccccc}
+		\toprule
+		Module              & Nearby & Red-Triangle & Two Pairs & Online\\
+		\midrule
+		$\alpha$ILP 	    & 1.0 	    & 		    & 		    &           \\
+		$\alpha$ILP + PI    & 	1.0 	& 1.0	& 1.0	    &  1.0    \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+
+
+\begin{table}
+	\caption{PI requirement and result on each patterns, where Ne-Preds means neural predicates.}
+	\label{tab:pi-result}
+	\begin{tabular}{ccccc}
+		\toprule
+		Patterns             & BK & BK-Clause & \# of Ne-Preds & Completely Learned\\
+		\midrule
+		red-triangle 	    & 0 	    & 	0	    &  4   &   yes        \\
+		two-pairs    & 	0 	& 0	& 3	    &  yes    \\
+		5-obj-online    & 	0 	& 0	&  	 1   &   yes   \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+
+
+\section{Conclusion}
+
+In this paper, we proposed an approach for Neural-Symbolic Predicate Invention. NeSy-PI is able to find the new knowledge and summarize it as new predicates, thus it requires less background knowledge for reasoning.
+In our experiment, we show that our PI model can successfully find the target program given only basic neural perception results and relevant constants, no further background knowledge is required. We also show our efficient prune strategy for predicate searching, the searching result is acquired faster and still sound.
+
+
+
+
+
+
 To solve the nearby pattern, we invent the concept $ inv\_pred\_1O\_1, O\_2 $ by cluster clauses, which actually represent the concept \textit{nearby}. It is necessary for the target patterns since it is true in all the positive images. It is also directly a sufficient predicate since no negative image has this pattern. The target clauses can be described as follows:
 \begin{align*}
 	target(X) :- & in(O_1,X),in(O_2,X), inv\_pred\_1(O_1,O_2).\\
@@ -202,7 +355,7 @@ To solve the red triangle pattern, we require the concept \textit{nearby} first 
 \begin{align*}
 	target(X) :- & in(O_1,X),in(O_2,X), inv\_pred\_1(O_1,O_2), \\
 						& shape(O_1, triangle), color(O_1, red), \\
-						& diff\_shape\_pair(O_1,_O2), diff\_color\_pair(O_1,O_2)\\
+						& diff\_shape\_pair(O_1,O_2), diff\_color\_pair(O_1,O_2)\\
 	\\
 	inv\_pred\_1(O_1, O_2) :- 	& in(O_1,X), in(O_2,X), a\_0(O_1,O_2).\\
 	inv\_pred\_1(O_1, O_2) :- 	& in(O_1,X), in(O_2,X), a\_1(O_1,O_2).\\		
@@ -238,99 +391,27 @@ A possible target clauses searching by predicate invention system is shown as fo
 
 Note that the predicate $ inv\_pred\_1(O_1,O_2,O_3,O_4,O_5) $ share the same bodies $ same\_shape\_pair(O_1,O_2), same\_color\_pair(O_1,O_2) $, which corresponds the concept $ five\_object\_on\_the\_same\_line\_with\_one\_pair\_of\_same\_color\_and\_shape\_objects $. We can remove shared bodies in the clause definition. Then the predicate corresponds a simpler concept $ five\_object\_on\_the\_same\_line $, which is a necessary predicate. It becomes sufficient after adding the deleted predicate back to. Removing shared bodies is not necessary but it can simplify the corresponding concepts of invented predicates. 
  
-\subsection{Evaluation by Sufficiency}
-The invented predicates can be sufficient for positive patterns, which equivalent to the target predicate as well. Once we have found a sufficient predicate for the positive patterns, we are done. Thus it is desirable for the task. 
-However, for searching complicate target patterns, the sufficient predicates usually cannot be invented in one step. Instead, they need other invented predicates as prerequisites. In this case, these prerequisite predicates are necessary for sufficient predicates. Thus they are supposed to be invented beforehand and used for sufficient predicate invention.
 
-\subsection{Evaluation by Necessity} 
-% Invented predicates, on the contrary to the target predicate, should be \textit{necessary} for positive patterns. 
- Necessary evaluation keeps predicates those are true in all positive patterns. They can be insufficient, thus they can also be true in negative patterns. Necessary predicates are invented as prerequisite for sufficient predicate invention.
+\begin{figure}[!htb]
+	\centering
+	\subfigure[Triangle]{\includegraphics[width=0.24\textwidth]{img/hide/triangle_3.png}} 
+	\subfigure[Vertical Line]{\includegraphics[width=0.24\textwidth]{img/hide/three_green_line.png}} 
+	\subfigure[Pentagon]{\includegraphics[width=0.24\textwidth]{img/hide/pentagon.png}}
+	
+	\subfigure[Triangle]{\includegraphics[width=0.24\textwidth]{img/hide/triangle_3_neg.png}} 
+	\subfigure[Vertical Line]{\includegraphics[width=0.24\textwidth]{img/hide/three_green_line_neg.png}} 
+	\subfigure[Pentagon]{\includegraphics[width=0.24\textwidth]{img/hide/pentagon_neg.png}}
+	\caption{Hide Patterns.}
+	\label{fig:hide-patterns}
+\end{figure}
+
+
+
+\textbf{Necessary Condition}: % Invented predicates, on the contrary to the target predicate, should be \textit{necessary} for positive patterns. 
+Necessary conditions can be entailed by all positive patterns. They can be insufficient, thus they can also be entailed by negative patterns. Necessary predicates are invented as prerequisite for sufficient predicate invention.
 The necessity guarantees the searching for invented predicates is controlled in a proper scale, since only limited necessary conditions exist in the positive patterns. 
 If we loose the necessity assumption, the searching domain for invented predicates can be huge since the conditions that doesn't exist in the positive patterns are irregular and  countless. 
-However, searching for some that necessary for the majority of positive patterns is reasonable. In this paper, we apply the necessity condition only for all the positive patterns.% TODO: check this limition.
-
-
-
-\subsection{Invented Clause Evaluation}
-
-
-Invented predicates are trivial if they are necessary for both positive and negative patterns. 
-
-A partial strict positive predicate 
-During evaluation, only predicates which evaluate all the PN pairs as general positive and the number of strict positive PN pairs is more than half are kept. The 
-They don't reduce the searching domain for the target predicate invention.  
-Instead of evaluate on images  one by one. 
-We can take a pair of positive and negative image 
-
-
-\begin{figure*}[h]
-	\centering
-	\begin{minipage}{\textwidth}
-	\includegraphics[width=\linewidth]{img/PN_pair_4.png} 
-	\caption{PN pair.}
-	\label{fig:pn-pair}
-	\end{minipage}
-\end{figure*}
-
-
-Each PN-pair consists of one positive image and one negative image. For a pair of image, its
-
-\begin{figure*}[h]
-	\centering
-	\begin{minipage}{\textwidth}
-		\includegraphics[width=\linewidth]{img/4_zone_heat_explain.png} 
-		\caption{PN pair.}
-		\label{fig:4-zone-heat-explain}
-	\end{minipage}
-\end{figure*}
-
-
-
-
-
-\section{Inference Result}
-
-\begin{figure*}[h]
-	\centering
-	\begin{minipage}{.3\textwidth}
-		\includegraphics[width=\textwidth]{img/mce/mce-0.png}
-		\caption{Caption}\label{label-a}
-	\end{minipage}
-	\begin{minipage}{.3\textwidth}
-		\includegraphics[width=\textwidth]{img/mce/mce-1.png}
-		\caption{Caption}\label{label-b}
-	\end{minipage}
-	\begin{minipage}{.3\textwidth}
-		\includegraphics[width=\textwidth]{img/mce/mce-2.png}
-		\caption{Caption}\label{label-c}
-	\end{minipage}
-	\begin{minipage}[b]{.3\textwidth}
-		\includegraphics[width=\textwidth]{img/mce/mce-3.png}
-		\caption{Caption}\label{label-d}
-	\end{minipage}
-	\begin{minipage}[b]{.3\textwidth}
-		\includegraphics[width=\textwidth]{img/mce/mce-4.png}
-		\caption{Caption}\label{label-e}
-	\end{minipage}
-	\begin{minipage}[b]{.3\textwidth}
-		\includegraphics[width=\textwidth]{img/mce/mce-5.png}
-		\caption{Caption}\label{label-f}
-	\end{minipage}
-	\begin{minipage}[b]{.3\textwidth}
-		\includegraphics[width=\textwidth]{img/mce/mce-6.png}
-		\caption{Caption}\label{label-g}
-	\end{minipage}
-	\begin{minipage}[b]{.3\textwidth}
-		\includegraphics[width=\textwidth]{img/mce/mce-7.png}
-		\caption{Caption}\label{label-h}
-	\end{minipage}
-	\begin{minipage}[b]{.3\textwidth}
-		\includegraphics[width=\textwidth]{img/mce/mce-8.png}
-		\caption{Caption}\label{label-i}
-	\end{minipage}
-	\caption{Pipeline of NSFR with PI module.}
-	\label{fig:mce}
-\end{figure*}
+In order to satisfy the necessary condition, we can \textbf{cluster} independent clauses. Independent means the clauses do not share same predicates. It usually leads to invent high level concepts. For example, cluster low level concept \textit{south}, \textit{east}, \textit{north}, \textit{west}, those are independent concept with each other, we can have a high level concept \textit{directions}. In this case, we need a new predicate to represent the cluster. Therefore the predicates are invented by necessary condition satisfied.
 
 
 
@@ -366,18 +447,9 @@ New predicate has to be able to 100\% describe the positive images. Otherwise, r
 \section{Experiments}
 
 Using the baseline $\alpha$ILP, the nearby concept test accuracy is upto xxx, after xxx iterations.
-\begin{table}
-	\caption{PI Evaluation Result}
-	\label{tab:nearby-pi-result}
-	\begin{tabular}{ccccc}
-		\toprule
-		Module & Red-Triangle & Nearby & Online & Two Pairs\\
-		\midrule
-		$\alpha$ILP 		&      0.90 	& 	1.0	& 		& 0.95 \\
-		$\alpha$ILP + PI &  	0.96 	& 	1.0	& 		& \\
-		\bottomrule
-	\end{tabular}
-\end{table}
+
+
+
 
 
 \section{Modifications}
