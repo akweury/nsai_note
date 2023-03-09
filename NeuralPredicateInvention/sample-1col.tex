@@ -104,14 +104,23 @@ The predicates used for Inductive Logic Programming (ILP) systems are typically 
 
 \section{Introduction}
 
+%% we are not research PI, but use PI as an approch to help NeSy-ILP find the target clause more quickly and accurately.
 
+
+%% propose the task
 Neural Symbolic Inductive Logical Programming (NeSy-ILP) learns logical programs from images. 
 Such learned program sences the inherent logic in the Visual Scenes and consider them as rules for classification task.  An example of such patterns is shown in figure \ref{fig:intro-hide}. In order to solve such patterns, a set of predicates are required, for example $\mathtt{blue\_sphere} $ defines the existence of a sphere with color blue. 
+%TODO: add one scentence to argue the importance and the difficuty
 
-However, to describe logical relations, these predicates in NeSy-ILP systems are either given as pretrained neural predicates or as hand-crafted background knowledge. 
-If any background knowledge or predicates are incorrect or unprovided, the optimal program searching can be failed. Thus it is essential for system to conquer the problem of depending of given knowledge but generate new language by itself. Besides, background knowledge can be hard to collect and usually provided by human experts, which limits the applying domain of ILP systems.
+%% BK is hard acquired
+However, to describe logical relations, these predicates in NeSy-ILP systems without PI support are either trained by neural network as pretrained neural predicates or explained by hand-crafted background knowledge. 
+If any background knowledge is missing or neural predicates has wrong prediction, the optimal program searching can be failed. Besides, background knowledge can be hard to collect and usually provided by human experts, which limits the applying domain of ILP systems. Thus it is essential for system to conquer the problem of such dependence.
 
-Predicate invention(PI)\cite{pi1988} is one direction to solve this problem, which is also a sub-problem in ILP. It works for ILP system to invent new predicates as symbols for new concepts based on well designed basic predicates, which enlarge the expression of the language in ILP. In our example, the concept $ \mathtt{blue\_sphere} $ is given as BK knowledge, but with PI system, such concepts are learned from separate basic concepts $ \mathtt{blue} $ and $ \mathtt{sphere} $. However, most ILP system doesn't support PI, since it is hard to define when and how to generate new predicates. 
+%% introduce PI
+Predicate invention(PI)\cite{pi1988} is one direction to solve this problem, which is also a sub-problem in ILP. It works for ILP system to invent new predicates as symbols for new concepts from well designed basic predicates, which enlarge the expression of the language in ILP and consequently reduce the dependence on human experts. 
+%% explain by an example
+One simple example is the concept of a sphere with blue color, in NeSy-ILP system, the concept $ \mathtt{blue\_sphere} $ can be explained by a clause $\mathtt{blue\_sphere(X):-Color(X,blue),Shape(X,sphere).} $ which is given as BK knowledge, but with PI system, such concepts are learned from separate basic predicates $ \mathtt{Color(X,blue)} $ and $ \mathtt{Shape(X,sphere)} $ by concatenation. 
+
 
 %% Tell some reasons if possible
 
@@ -127,27 +136,38 @@ Predicate invention(PI)\cite{pi1988} is one direction to solve this problem, whi
 		\includegraphics[width=0.3\linewidth]{img/intro_hide/false2.png}
 		\includegraphics[width=0.3\linewidth]{img/intro_hide/false3.png}
 		\label{fig:intro-hide}
-		\end{minipage}
-		\begin{minipage}{0.55\textwidth}
-			\centering
-			\includegraphics[width=\linewidth]{img/intro_hide/intro_bk.png} 
-			\label{fig:intro-bk}
-		\end{minipage}
-			\caption{A logic Pattern in 3D scenes can be learned by Neural-Symbolic ILP system. Positive images on the first row, negative images on the second row. The truth pattern is: a blue sphere either locate on the left side of a green sphere or locate on the right side of a green cube.}
+	\end{minipage}
+	\begin{minipage}{0.55\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{img/intro_hide/intro_bk.png} 
+		\label{fig:intro-bk}
+	\end{minipage}
+	\caption{A logic Pattern in 3D scenes can be learned by Neural-Symbolic ILP system. Positive images on the first row, negative images on the second row. The truth pattern is: a blue sphere either locate on the left side of a green sphere or locate on the right side of a green cube.}
 \end{figure*}
 
-Either placed on the side 
 
+%% problems that PI can solve or relief
+However, most ILP system doesn't support PI. If such background knowledge is not provided, NeSy-ILP system may still find such concatenation of predicates but they are never considered as a single concept and be used as a whole in new clauses but only be search one predicate by one predicate, it has two major drawbacks, 1. it can lead to incomplete concept explanation if any single predicate is failed to be searched; 2. it can make the target clauses too long to search, which is not time efficiency at all.
+In our PI system, such background knowledge is not required but they can be collected during the target clause searching, which can both simplify and precise the target clause.
 
-We propose a neural-symbolic PI approach based on \textit{clustering} and \textit{extension} of relational concepts, which is able to reasoning visual scenes without background knowledge. The knowledge can be summarized from scenes. It evaluates the clauses based on its characteristics of necessity and sufficiency. The procedure is repeated iteration by iteration, until the target clauses are found. We tested our approach on both 2D and 3D image patterns.
+%% motivation of this paper, and point out the importance of this paper
+The goal of our work is to find a predicate invention pipeline and concatenate it with existing NeSy-ILP system, so that some high level concepts are not necessarily given from reasoning language directly. But they can be invented as needed during training. It can improve the system independence on human experts and also improves the generalization of AI models for adapting unseen tasks. 
+
+%% works of this paper and its contribution
+In this paper, we mainly focus on object property and their spatial relationships comparison. In order to using a single language to cover two objects spatial relations as many as possible, we designed an area division map called \textit{target map} as shown in figure \ref{fig:8-area}, they are mapped to neural predicates as consider as basic predicates for PI model. As we shown in the experiment, the concepts like left, right, nearby supposed to be invented as new predicates during the training if any of them are needed to represent the target pattern in the positive images.  This map both considers the distance and directions of the latent relation objects. 
+
+The target clause is searched in a top-bottom way, i.e. we start from most general rules and extend the rules by adding predicates as constraints. The size of searching domain for the target clause is growth exponentially over its length, which make the evaluation very time consuming. Since a naive pruning strategy can eliminate the global optimal clause. 
+We designed an evaluation function based on the characteristics of necessity and sufficiency of the clause, which can scoring the searched clauses and keep the promising ones for further extension.
+
+We propose NeSy-$\pi$, a neural-symbolic PI approach, based on \textit{clustering} and \textit{extension} of relational concepts, which is able to reasoning visual scenes without background knowledge. The knowledge can be summarized from scenes. It evaluates the clauses based on its characteristics of necessity and sufficiency. The procedure is repeated iteration by iteration, until the target clauses are found. We tested our approach on both 2D and 3D image patterns.
 
 Comparing to existing approaches, our approach has following contributions
 
 \begin{itemize}
-	\item We proposed a predicate invention approach for neural symbolic ILP system.
-	\item A formalized way to efficiently evaluate the clauses in visual scenes, which can be further used for pruning.
+	\item We proposed a predicate invention approach for neural-symbolic ILP system.
+	\item A formalized way to efficiently evaluate the clauses in visual scenes, which can be further used for pruning strategy.
 	\item We discussed about \textit{when} and \textit{how} to invent new predicates based on \textit{necessary} and \textit{sufficient} judgment factors.
-	\item The implementation.
+	\item The provide an implementation of this approach.
 	
 \end{itemize}
 
@@ -257,15 +277,15 @@ The key idea of these definitions is to find a way to provide promising clauses 
 \subsection{Clause Generation by Extension}
 We getting new clauses by extend the existing clauses with knowing predicates in the language. In every experiment, the clause extension starting from the most general one, i.e. $ \mathtt{target(X):-in(O1,X),in(O2,X).} $, whereas the number of predicate $ in(O,X) $ depends on the related object number in the ground truth pattern. Assume there are $ 10 $ predicates exist in the language, to extend one predicate from initial clause can acquire 10 new clauses, to extend 2 predicates can acquire $ 10^2=100 $, and so on. For complicate patterns, the target clauses can require more than 5 predicates or more, thus a prune strategy is necessary during clause extension. We select the clauses those are either necessary or sufficient, which can significantly reduce the number of new clauses after extension.
 \begin{align*}
-	\mathtt{intermediate\_clause(Tree,Road)&:-left(Tree,Road)} 	\\
+	\mathtt{intermediate\_clause(Tree,Road)}&\mathtt{:-left(Tree,Road)}
 \end{align*}
 
 \subsection{Predicate Invention by Clustering}
 New predicate invention happens after new clause generation. We acquire new predicates by clustering necessary clauses or sufficient clauses. The new predicates take clustered clauses as their bodies, where clauses in the cluster are considered with $ or $ relation. Clustering can take rules with sub-independent cases into account. For example, a tree placed either on the left side of the road or on the right side of the road can be represented by following predicates
 
 \begin{align*}
-	\mathtt{inv\_pred(Tree,Road)&:-left(Tree,Road)} 	\\
-	\mathtt{inv\_pred(Tree,Road)&:-right(Tree, Road)}
+	\mathtt{inv\_pred(Tree,Road)}&\mathtt{:-left(Tree,Road)} 	\\	
+	\mathtt{inv\_pred(Tree,Road)}&\mathtt{:-right(Tree, Road)}
 \end{align*}
 To evaluate new predicates, we extent the initial clause with new predicates and evaluate them by four score map. If the new clause is necessary or  sufficient, the corresponding predicate is kept, otherwise it is pruned.
 
@@ -297,8 +317,7 @@ Learning result of red-triangle pattern is shown as follows:
 	inv_pred25(O1,O2):-color(O1,red),color(O2,blue),in(O1,X),in(O2,X),inv_pred0(O2,O1),shape(O1,triangle).
 	inv_pred25(O1,O2):-color(O1,red),color(O2,yellow),in(O1,X),in(O2,X),inv_pred0(O2,O1),shape(O1,triangle).
 	inv_pred25(O1,O2):-color(O1,red),color(O2,yellow),in(O1,X),in(O2,X),inv_pred0(O2,O1),shape(O2,circle).
-\end{lstlisting}\\
-
+\end{lstlisting}
 
 
 The performance on each patterns in Kandinsky pattern is shown as follows:

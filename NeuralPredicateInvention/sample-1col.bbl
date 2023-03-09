@@ -1,4 +1,4 @@
-\begin{thebibliography}{37}
+\begin{thebibliography}{44}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\href}[2]{#2}
@@ -11,20 +11,74 @@
 \providecommand{\Pubmed}[1]{\href{pmid:#1}{\path{#1}}}
 \providecommand{\bibinfo}[2]{#2}
 \ifx\xfnm\relax \def\xfnm[#1]{\unskip,\space#1}\fi
+%Type = Incollection
+\bibitem[{MUG(1988)}]{MUGGLETON1988339}
+\bibinfo{title}{Machine invention of first-order predicates by inverting
+  resolution},
+\newblock in: \bibinfo{editor}{J.~Laird} (Ed.), \bibinfo{booktitle}{Machine
+  Learning Proceedings 1988}, \bibinfo{publisher}{Morgan Kaufmann},
+  \bibinfo{address}{San Francisco (CA)}, \bibinfo{year}{1988}, pp.
+  \bibinfo{pages}{339--352}. \URLprefix
+  \url{https://www.sciencedirect.com/science/article/pii/B9780934613644500402}.
+  \DOIprefix\doi{https://doi.org/10.1016/B978-0-934613-64-4.50040-2}.
 %Type = Article
-\bibitem[{Müller and Holzinger(2021)}]{kp3}
-\bibinfo{author}{H.~Müller}, \bibinfo{author}{A.~Holzinger},
-\newblock \bibinfo{title}{Kandinsky patterns},
-\newblock \bibinfo{journal}{Artificial Intelligence} \bibinfo{volume}{300}
-  (\bibinfo{year}{2021}) \bibinfo{pages}{103546}. \URLprefix
-  \url{https://www.sciencedirect.com/science/article/pii/S0004370221000977}.
-  \DOIprefix\doi{https://doi.org/10.1016/j.artint.2021.103546}.
+\bibitem[{Muggleton(1995)}]{Muggleton1995InverseEA}
+\bibinfo{author}{S.~H. Muggleton},
+\newblock \bibinfo{title}{Inverse entailment and progol},
+\newblock \bibinfo{journal}{New Generation Computing} \bibinfo{volume}{13}
+  (\bibinfo{year}{1995}) \bibinfo{pages}{245--286}.
+%Type = Article
+\bibitem[{Blockeel and {De Raedt}(1998)}]{BLOCKEEL1998285}
+\bibinfo{author}{H.~Blockeel}, \bibinfo{author}{L.~{De Raedt}},
+\newblock \bibinfo{title}{Top-down induction of first-order logical decision
+  trees},
+\newblock \bibinfo{journal}{Artificial Intelligence} \bibinfo{volume}{101}
+  (\bibinfo{year}{1998}) \bibinfo{pages}{285--297}. \URLprefix
+  \url{https://www.sciencedirect.com/science/article/pii/S0004370298000344}.
+  \DOIprefix\doi{https://doi.org/10.1016/S0004-3702(98)00034-4}.
+%Type = Article
+\bibitem[{Ahlgren and Yuen(2013)}]{atom}
+\bibinfo{author}{J.~Ahlgren}, \bibinfo{author}{S.~Y. Yuen},
+\newblock \bibinfo{title}{Efficient program synthesis using constraint
+  satisfaction in inductive logic programming},
+\newblock \bibinfo{journal}{J. Mach. Learn. Res.} \bibinfo{volume}{14}
+  (\bibinfo{year}{2013}) \bibinfo{pages}{3649–3682}.
+%Type = Article
+\bibitem[{Inoue et~al.(2014)Inoue, Ribeiro, and Sakama}]{LFIT}
+\bibinfo{author}{K.~Inoue}, \bibinfo{author}{T.~Ribeiro},
+  \bibinfo{author}{C.~Sakama},
+\newblock \bibinfo{title}{Learning from interpretation transition},
+\newblock \bibinfo{journal}{Machine Learning} \bibinfo{volume}{94}
+  (\bibinfo{year}{2014}). \DOIprefix\doi{10.1007/s10994-013-5353-8}.
 %Type = Misc
 \bibitem[{Cropper and Morel(2021)}]{pilff}
 \bibinfo{author}{A.~Cropper}, \bibinfo{author}{R.~Morel},
   \bibinfo{title}{Predicate invention by learning from failures},
   \bibinfo{year}{2021}. \URLprefix \url{https://arxiv.org/abs/2104.14426}.
   \DOIprefix\doi{10.48550/ARXIV.2104.14426}.
+%Type = Misc
+\bibitem[{Cerna and Cropper(2023)}]{gtnpi}
+\bibinfo{author}{D.~M. Cerna}, \bibinfo{author}{A.~Cropper},
+  \bibinfo{title}{Generalisation through negation and predicate invention},
+  \bibinfo{year}{2023}. \URLprefix \url{https://arxiv.org/abs/2301.07629}.
+  \DOIprefix\doi{10.48550/ARXIV.2301.07629}.
+%Type = Article
+\bibitem[{Evans and Grefenstette(2017)}]{Evans2018}
+\bibinfo{author}{R.~Evans}, \bibinfo{author}{E.~Grefenstette},
+\newblock \bibinfo{title}{Learning explanatory rules from noisy data},
+\newblock \bibinfo{journal}{CoRR} \bibinfo{volume}{abs/1711.04574}
+  (\bibinfo{year}{2017}). \URLprefix \url{http://arxiv.org/abs/1711.04574}.
+  \href{http://arxiv.org/abs/1711.04574}{{\tt arXiv:1711.04574}}.
+%Type = Article
+\bibitem[{KAMINSKI et~al.(2018)KAMINSKI, EITER, and
+  INOUE}]{kaminski_eiter_inoue_2018}
+\bibinfo{author}{T.~KAMINSKI}, \bibinfo{author}{T.~EITER},
+  \bibinfo{author}{K.~INOUE},
+\newblock \bibinfo{title}{Exploiting answer set programming with external
+  sources for meta-interpretive learning},
+\newblock \bibinfo{journal}{Theory and Practice of Logic Programming}
+  \bibinfo{volume}{18} (\bibinfo{year}{2018}) \bibinfo{pages}{571–588}.
+  \DOIprefix\doi{10.1017/S1471068418000261}.
 %Type = Inproceedings
 \bibitem[{Evans and Grefenstette(2018)}]{dILP}
 \bibinfo{author}{R.~Evans}, \bibinfo{author}{E.~Grefenstette},

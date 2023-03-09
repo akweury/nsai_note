@@ -1,53 +1,58 @@
-This is BibTeX, Version 0.99d (TeX Live 2022)
+This is BibTeX, Version 0.99d
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: sample-1col.aux
+Reallocating 'name_of_file' (item size: 1) to 21 items.
 The style file: elsarticle-num-names.bst
+Reallocating 'name_of_file' (item size: 1) to 12 items.
 Database file #1: sample-ceur.bib
-Reallocated singl_function (elt_size=4) to 100 items from 50.
+Warning--I didn't find a database entry for "pi1988"
+Warning--to sort, need author or key in MUGGLETON1988339
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Warning--empty author in MUGGLETON1988339
 Warning--can't use both volume and number fields in JCohen96
 Warning--empty pages in Editor00
 Warning--empty pages in Editor00a
 Warning--empty pages in VanGundy07
 Warning--empty author in 2004:ITE:1009386.1010128
-You've used 37 entries,
+You've used 44 entries,
             2918 wiz_defined-function locations,
-            1164 strings with 16362 characters,
-and the built_in function-call counts, 20189 in all, are:
-= -- 1483
-> -- 527
-< -- 45
-+ -- 225
-- -- 164
-* -- 2203
-:= -- 2784
-add.period$ -- 70
-call.type$ -- 37
-change.case$ -- 249
-chr.to.int$ -- 35
-cite$ -- 42
-duplicate$ -- 1724
-empty$ -- 1713
-format.name$ -- 239
-if$ -- 3853
+            1222 strings with 17701 characters,
+and the built_in function-call counts, 24413 in all, are:
+= -- 1825
+> -- 652
+< -- 50
++ -- 272
+- -- 204
+* -- 2690
+:= -- 3367
+add.period$ -- 85
+call.type$ -- 44
+change.case$ -- 299
+chr.to.int$ -- 42
+cite$ -- 53
+duplicate$ -- 2052
+empty$ -- 2044
+format.name$ -- 301
+if$ -- 4669
 int.to.chr$ -- 3
 int.to.str$ -- 1
-missing$ -- 306
-newline$ -- 158
-num.names$ -- 149
-pop$ -- 581
+missing$ -- 364
+newline$ -- 190
+num.names$ -- 175
+pop$ -- 683
 preamble$ -- 1
-purify$ -- 240
+purify$ -- 288
 quote$ -- 0
-skip$ -- 491
+skip$ -- 581
 stack$ -- 0
-substring$ -- 755
-swap$ -- 1136
-text.length$ -- 15
+substring$ -- 953
+swap$ -- 1364
+text.length$ -- 16
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 309
-warning$ -- 5
-while$ -- 134
+type$ -- 372
+warning$ -- 7
+while$ -- 158
 width$ -- 0
-write$ -- 512
-(There were 5 warnings)
+write$ -- 608
+(There were 8 warnings)
