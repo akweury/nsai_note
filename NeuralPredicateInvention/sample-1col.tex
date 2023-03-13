@@ -1,4 +1,4 @@
-%% The first command in your LaTeX source must be the \documentclass command.
+% The first command in your LaTeX source must be the \documentclass command.
 %%
 %% Options:
 %% twocolumn : Two column layout.
@@ -17,6 +17,7 @@
 %% Need pygment <http://pygments.org/> <http://pypi.python.org/pypi/Pygments>
 \usepackage{listings}
 \usepackage{subfigure}
+\usepackage{tikz}
 %% auto break lines
 \lstset{breaklines=true}
 \newtheorem{theorem}{Theorem}[section]
@@ -196,6 +197,8 @@ can answer the question, why they are in the same group. However, common propert
 and using a single word  to summarize it to a suitable new concept is one of powerful ability of human-being. It simplifies the description of complex 
 Predicate invention is an essential ability for ILP system to reasoning about 
 
+
+
 \begin{figure*}[h]
 	\centering
 	\begin{minipage}{\textwidth}
@@ -299,11 +302,11 @@ shape: circle, square, triangle; color: red, yellow, blue; group\_shape: line, u
 
 \begin{figure}[!htb]
 	\centering
-	\subfigure[Nearby]{\includegraphics[width=0.24\textwidth]{img/kp/nearby.png}} 
-	\subfigure[Two pairs]{\includegraphics[width=0.24\textwidth]{img/kp/twopairs.png}} 
+	\subfigure[Two Pairs]{\includegraphics[width=0.24\textwidth]{img/kp/twopairs.png}} 
 	\subfigure[Red Triangle]{\includegraphics[width=0.24\textwidth]{img/kp/red_triangle.png}} 
-	\subfigure[5 Objects Online ]{\includegraphics[width=0.24\textwidth]{img/kp/online_pair.png}}
-	\caption{Kandinsky Patterns.}
+	\subfigure[Check Mark]{\includegraphics[width=0.24\textwidth]{img/kp/check_mark_en.png}} 
+	\subfigure[Cross]{\includegraphics[width=0.24\textwidth]{img/kp/check_mark_de.png}} 
+	\caption{Kandinsky Patterns. \textbf{Two Pairs}: This pattern always have 4 objects inside, two of them has same color and same shape, the other two has same shape and different color. \textbf{Red Triangle}: This pattern always have a red triangle, and another object with different color and different shape nearby, the rest 4 objects are random objects. \textbf{Check Mark}: the positions of 5 objects consists of an outline of check mark. \textbf{Cross}: the position of 5 objects consists of an outline of a cross mark.}
 	\label{fig:kandinsky-patterns}
 \end{figure}
 
@@ -337,15 +340,20 @@ The performance on each patterns in Kandinsky pattern is shown as follows:
 
 
 \begin{table}
+	\centering
 	\caption{PI requirement and result on each patterns, where Ne-Preds means neural predicates.}
 	\label{tab:pi-result}
 	\begin{tabular}{ccccc}
 		\toprule
-		Patterns             & BK & BK-Clause & \# of Ne-Preds & Completely Learned\\
+		Patterns      &  \# of Concepts      & BK & BK-Clause & \# of Ne-Preds \\
 		\midrule
-		red-triangle 	    & 0 	    & 	0	    &  4   &   yes        \\
-		two-pairs    & 	0 	& 0	& 3	    &  yes    \\
-		5-obj-online    & 	0 	& 0	&  	 1   &   yes   \\
+		red-triangle &	3  & 0 	    & 	0	    &  4           \\
+		two-pairs   & 	4	& 	0 	& 0	& 3	        \\
+		5-obj-online &	1	& 	0 	& 0	&  	 1     \\
+		check-mark-en(random color) &	1	& 	0 	& 0	&  	 1    \\
+		check-mark-en(same color) &	1	& 	0 	& 0	&  	 1      \\
+		check-mark-en(same shape) &	1	& 	0 	& 0	&  	 1      \\
+		check-mark-en(same shape and color) &	1	& 	0 	& 0	&  	 1   \\
 		\bottomrule
 	\end{tabular}
 \end{table}
@@ -359,9 +367,7 @@ In our experiment, we show that our PI model can successfully find the target pr
 
 
 
-
-
-
+\newpage
 To solve the nearby pattern, we invent the concept $ inv\_pred\_1O\_1, O\_2 $ by cluster clauses, which actually represent the concept \textit{nearby}. It is necessary for the target patterns since it is true in all the positive images. It is also directly a sufficient predicate since no negative image has this pattern. The target clauses can be described as follows:
 \begin{align*}
 	target(X) :- & in(O_1,X),in(O_2,X), inv\_pred\_1(O_1,O_2).\\
