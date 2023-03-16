@@ -1,4 +1,4 @@
-% The first command in your LaTeX source must be the \documentclass command.
+%% The first command in your LaTeX source must be the \documentclass command.
 %%
 %% Options:
 %% twocolumn : Two column layout.
@@ -18,10 +18,222 @@
 \usepackage{listings}
 \usepackage{subfigure}
 \usepackage{tikz}
-%% auto break lines
-\lstset{breaklines=true}
+\usepackage{tikzscale}
+\usepackage{amsmath}
+\usepackage{tabularx}
+\usepackage{slashbox}
+\usepackage{multirow}
+\usetikzlibrary{positioning,automata,arrows}
+\tikzset{
+	->,  % makes the edges directed
+	>=stealth, % makes the arrow heads bold
+	node distance=1cm, % specifies the minimum distance between two nodes. Change if n
+	every state/.style={thick, fill=gray!10}, % sets the properties for each ’state’ n
+	initial text=$ $, % sets the text that appears on the start arrow
+}
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{definition}{Definition}[section]
+\usepackage{xcolor}
+\newcommand{\dd}[1]{\textcolor{red}{[#1 \textsc{--Dev}]}}
+\newcommand{\hk}[1]{\textcolor{Apricot}{[#1 \textsc{--HK}]}}
+\newcommand{\todo}[1]{\textcolor{blue}{[#1 \textsc{--TODO}]}}
+\newcommand{\eg}{\emph{e.g.}~} 
+\newcommand{\ie}{\emph{i.e.}~} 
+
+%% auto break lines
+%\lstset{breaklines=true}
+
+
+
+%%%
+%%% For Prolog Listings
+%%%
+
+%\usepackage[top=1in]{geometry}
+\usepackage{textcomp}
+\usepackage{listings}
+%\usepackage{minted}      % (requires -shell-escape)
+\usepackage{xcolor}
+\usepackage{filecontents}
+
+% --- ugly internals for language definition ---
+%
+\makeatletter
+
+% initialisation of user macros
+\newcommand\PrologPredicateStyle{}
+\newcommand\PrologVarStyle{}
+\newcommand\PrologAnonymVarStyle{}
+\newcommand\PrologAtomStyle{}
+\newcommand\PrologOtherStyle{}
+\newcommand\PrologCommentStyle{}
+
+% useful switches (to keep track of context)
+\newif\ifpredicate@prolog@
+\newif\ifwithinparens@prolog@
+
+% save definition of underscore for test
+\lst@SaveOutputDef{`_}\underscore@prolog
+
+% local variables
+\newcount\currentchar@prolog
+
+\newcommand\@testChar@prolog%
+{%
+	% if we're in processing mode...
+	\ifnum\lst@mode=\lst@Pmode%
+	\detectTypeAndHighlight@prolog%
+	\else
+	% ... or within parentheses
+	\ifwithinparens@prolog@%
+	\detectTypeAndHighlight@prolog%
+	\fi
+	\fi
+	% Some housekeeping...
+	\global\predicate@prolog@false%
+}
+
+% helper macros
+\newcommand\detectTypeAndHighlight@prolog
+{%
+	% First, assume that we have an atom.
+	\def\lst@thestyle{\PrologAtomStyle}%
+	% Test whether we have a predicate and modify the style accordingly.
+	\ifpredicate@prolog@%
+	\def\lst@thestyle{\PrologPredicateStyle}%
+	\else
+	% Test whether we have a predicate and modify the style accordingly.
+	\expandafter\splitfirstchar@prolog\expandafter{\the\lst@token}%
+	% Check whether the identifier starts by an underscore.
+	\expandafter\ifx\@testChar@prolog\underscore@prolog%
+	% Check whether the identifier is '_' (anonymous variable)
+	\ifnum\lst@length=1%
+	\let\lst@thestyle\PrologAnonymVarStyle%
+	\else
+	\let\lst@thestyle\PrologVarStyle%
+	\fi
+	\else
+	% Check whether the identifier starts by a capital letter.
+	\currentchar@prolog=65
+	\loop
+	\expandafter\ifnum\expandafter`\@testChar@prolog=\currentchar@prolog%
+	\let\lst@thestyle\PrologVarStyle%
+	\let\iterate\relax
+	\fi
+	\advance \currentchar@prolog by 1
+	\unless\ifnum\currentchar@prolog>90
+	\repeat
+	\fi
+	\fi
+}
+\newcommand\splitfirstchar@prolog{}
+\def\splitfirstchar@prolog#1{\@splitfirstchar@prolog#1\relax}
+\newcommand\@splitfirstchar@prolog{}
+\def\@splitfirstchar@prolog#1#2\relax{\def\@testChar@prolog{#1}}
+
+% helper macro for () delimiters
+\def\beginlstdelim#1#2%
+{%
+	\def\endlstdelim{\PrologOtherStyle #2\egroup}%
+	{\PrologOtherStyle #1}%
+	\global\predicate@prolog@false%
+	\withinparens@prolog@true%
+	\bgroup\aftergroup\endlstdelim%
+}
+
+% language name
+\newcommand\lang@prolog{Prolog-pretty}
+% ``normalised'' language name
+\expandafter\lst@NormedDef\expandafter\normlang@prolog%
+\expandafter{\lang@prolog}
+
+% language definition
+\expandafter\expandafter\expandafter\lstdefinelanguage\expandafter%
+{\lang@prolog}
+{%
+	language            = Prolog,
+	keywords            = {},      % reset all preset keywords
+	showstringspaces    = false,
+	alsoletter          = (,
+	moredelim           = **[is][\beginlstdelim{(}{)}]{(}{)},
+	MoreSelectCharTable =
+	\lst@DefSaveDef{`(}\opparen@prolog{\global\predicate@prolog@true\opparen@prolog},
+}
+
+% Hooking into listings to test each ``identifier''
+\newcommand\@ddedToOutput@prolog\relax
+\lst@AddToHook{Output}{\@ddedToOutput@prolog}
+
+\lst@AddToHook{PreInit}
+{%
+	\ifx\lst@language\normlang@prolog%
+	\let\@ddedToOutput@prolog\@testChar@prolog%
+	\fi
+}
+
+\lst@AddToHook{DeInit}{\renewcommand\@ddedToOutput@prolog{}}
+
+\makeatother
+%
+% --- end of ugly internals ---
+
+
+% --- definition of a custom style similar to that of Pygments ---
+% custom colors
+\definecolor{PrologVar}{RGB}{65,105,225}%{000,031,255}
+\definecolor{PrologPredicate} {RGB}{205,92,92}%{186,032,032}
+\definecolor{PrologAnonymVar}{RGB}{000,127,000}
+\definecolor{PrologAtom}     {RGB}{95,95,95}
+\definecolor{PrologComment}  {RGB}{063,128,127}
+\definecolor{PrologOther}    {RGB}{000,000,000}
+
+%\definecolor{PrologPredicate}{RGB}{000,031,255}
+%\definecolor{PrologVar}      {RGB}{024,021,125}
+%\definecolor{PrologAnonymVar}{RGB}{000,127,000}
+%\definecolor{PrologAtom}     {RGB}{186,032,032}
+%\definecolor{PrologComment}  {RGB}{063,128,127}
+%\definecolor{PrologOther}    {RGB}{000,000,000}
+
+% redefinition of user macros for Prolog style
+\renewcommand\PrologPredicateStyle{\color{PrologPredicate}}
+\renewcommand\PrologVarStyle{\color{PrologVar}}
+\renewcommand\PrologAnonymVarStyle{\color{PrologAnonymVar}}
+\renewcommand\PrologAtomStyle{\color{PrologAtom}}
+\renewcommand\PrologCommentStyle{\itshape\color{PrologComment}}
+\renewcommand\PrologOtherStyle{\color{PrologOther}}
+
+% custom style definition 
+\lstdefinestyle{Prolog-pygsty}
+{
+	language     = Prolog-pretty,
+	upquote      = true,
+	stringstyle  = \PrologAtomStyle,
+	commentstyle = \PrologCommentStyle,
+	literate     =
+	{:-}{{\PrologOtherStyle :-}}2
+	{,}{{\PrologOtherStyle ,}}1
+	{.}{{\PrologOtherStyle .}}1
+}
+
+% global settings
+\lstset
+{
+	captionpos = below,
+	columns    = fullflexible,
+	frame = single,
+	basicstyle = \fontsize{10}{10}\ttfamily,
+}
+\renewcommand{\ttdefault}{cmtt}
+
+
+%%%
+%%% End for Prolog Listings
+%%%
+
+%%%
+%%% End for Prolog Listings
+%%%
+
 %%
 %% end of the preamble, start of the body of the document source.
 \begin{document}
@@ -138,14 +350,31 @@ One simple example is the concept of a sphere with blue color, in NeSy-ILP syste
 		\includegraphics[width=0.3\linewidth]{img/intro_hide/false3.png}
 		\label{fig:intro-hide}
 	\end{minipage}
-	\begin{minipage}{0.55\textwidth}
-		\centering
-		\includegraphics[width=\linewidth]{img/intro_hide/intro_bk.png} 
-		\label{fig:intro-bk}
-	\end{minipage}
 	\caption{A logic Pattern in 3D scenes can be learned by Neural-Symbolic ILP system. Positive images on the first row, negative images on the second row. The truth pattern is: a blue sphere either locate on the left side of a green sphere or locate on the right side of a green cube.}
 \end{figure*}
 
+
+\begin{table}
+	\caption{Comparison of language requirement between NeSy-ILP and NeSy-$ \pi $. Meaning of abbreviations in the table: Const-Constant. BK-Background Knowledge. Ne-Pred-Neural Predicate. }
+	\label{tab:ilp-pi-compare}
+	\begin{tabular}{c|c|c}
+		\hline
+		\toprule
+		 & NeSy-ILP &  NeSy-$ \pi $ \\
+		 \hline 
+		\multirow{2}*{Const} & \multicolumn{2}{c}{$\mathtt{ Object:O1/O2, Color: Blue/Pink/Green}$}\\
+		& \multicolumn{2}{c}{$\mathtt{Shape:Sphere/Cube}$ ,  $\mathtt{Direction: Left/Right/Front/Behind}$}\\
+		\hline 
+		Basic-Pred &\multicolumn{2}{c}{$\mathtt{color/2/obj,color;shape/2/obj,shape; dir/2/obj,obj}$} \\ 
+		\hline
+		\multirow{3}*{BK} & $\mathtt{b\_sp(O1):-color(O1,Blue),shape(O1,Sphere).}$ & \multirow{3}*{-} \\
+			& $\mathtt{g\_sp(O1):-color(O1,Green),shape(O1,Sphere).}$ & \\
+		 	& $\mathtt{g\_cu(O1):-color(O1,Green),shape(O1,Cube).}$ & \\ 
+		 \hline 
+		Ne-Pred & $\mathtt{left\_side/2/obj,obj;right\_side/2/obj,obj}$& - \\
+		\bottomrule
+	\end{tabular}
+\end{table}
 
 %% problems that PI can solve or relief
 However, most ILP system doesn't support PI. If such background knowledge is not provided, NeSy-ILP system may still find such concatenation of predicates but they are never considered as a single concept and be used as a whole in new clauses but only be search one predicate by one predicate, it has two major drawbacks, 1. it can lead to incomplete concept explanation if any single predicate is failed to be searched; 2. it can make the target clauses too long to search, which is not time efficiency at all.
@@ -192,6 +421,10 @@ $ \alpha $ILP (citation?) supports visual image as input but require background 
 
 \section{Target Map}
 
+
+
+
+
 Collect the facts from group of visual scenes and induce the common properties from the facts are 
 can answer the question, why they are in the same group. However, common properties sometimes can be not obviously and hard to be described.
 and using a single word  to summarize it to a suitable new concept is one of powerful ability of human-being. It simplifies the description of complex 
@@ -231,8 +464,11 @@ Using the target map, multiple real-world related spatial concepts can be repres
 \textit{nearby}(combining area 0,1,2,3) and so on. 
 
 \newpage
-\section{Predicate Invention}
 
+\section{NeSy-ILP}
+
+
+\section{NeSy-$ \pi $}
 
 The target of inductive logic programming is to find a target clause $ P $ for the positive patterns $ Q $ , such that the clause $ P $ describes some logical relations that exist and only exist in the positive patterns. 
 Thus the target clause $ P $ is sufficient and necessary for the positive patterns $ Q $.
@@ -245,7 +481,7 @@ Thus the target clause $ P $ is sufficient and necessary for the positive patter
 %TODO: tell the way of clause generation
 We prepare equal number of positive and negative images for evaluation, thus all the images can be paired from two groups.
 A new generated clause is evaluated on all the PN pairs. Evaluation on each pair getting two values, one from positive and one from negative. 
- We can take negative value as x axis, positive value as y axis and draw all the evaluation result on a coordinate system. Thus each PN pair corresponds a point. We observed these points are only appears in the four clusters in the coordinate system( as show in figure \ref{fig:mce-example} left.), thus we fuzzy these points to only four areas (we use $ f(P) $ to represent this step, where $ P $ is the points on the whole dataset.), each take one cluster. Thus for these two values, we only have $ 2^2=4 $ different combinations. We named it as \textit{four score map}.  
+ We can take negative value as x axis, positive value as y axis and draw all the evaluation result on a coordinate system. Thus each PN pair corresponds a point. We observed these points are only appears in the four clusters in the coordinate system( as show in figure \ref{fig:pn-pair} middle.), thus we fuzzy these points to only four areas (we use $ f(P) $ to represent this step, where $ P $ is the points on the whole dataset.), each take one cluster. Thus for these two values, we only have $ 2^2=4 $ different combinations. We named it as \textit{four score map}.  
  
  \begin{figure*}[h]
  	\centering
@@ -272,33 +508,50 @@ Base on the scoring areas of the predicates, we can classify them into several g
 	Scores on $ (0,0) $ and $ (0,1) $, $ s_{00}+s_{01} = N $ and $ s_{01}>0 $. It induces directly some of positive patterns but can be failed on some other positive patterns. It never induces any negative patterns.
 \end{definition}
 
-The key idea of these definitions is to find a way to provide promising clauses for extension or clustering. Since it is impossible to extended every clauses and check its score, or try to cluster any number of existing clauses. Thus a prune strategy is required for promising clause generation. We consider necessary clauses and sufficient clauses as promising clauses. For each iteration of clause generation, we extend only these two kinds of clauses, which can significantly reduce the number of new clauses, whereas the rest clauses are pruned. In the PI section, the new predicates are acquired by clustering of same type of clauses, i.e. they are either clustered from necessary clauses only or from sufficient clauses only.
 
+The key idea of these definitions is to provide an evaluation metric for searched clauses. Since it is impossible to consider all the clauses for rule searching, an efficient pruning strategy is necessary. Our pruning strategy is mainly based on the satisfaction of the clauses on these definitions. 
 
+\begin{figure*}[h]
+	\centering
+	\includegraphics[width=0.8\textwidth]{scripts/fsm.tikz}
+	\caption{The workflow of NeSy-$ \pi $. Edge $ a $ fires when maximum extension time is not exceed or no new predicates are invented after clustering. Edge $ b $ fires when maximum extension times is exceed. Edge $ c $ fires when new predicates are kept after pruning.}
+	\label{fig:nesy-pi-workflow.}
+\end{figure*}
 
+The workflow of NeSy-$ \pi $ is shown in figure \ref{fig:nesy-pi-workflow.}. The system's work is basically to maintain a clause set $ \mathcal{C} $. We add promising clauses inside and remove the abandoned ones from it. We explain each state as follows
+\paragraph{Initial}
+The searching is started from here. The input is the most general clause, i.e. the one that only states the existence of objects in the scene. For a scene with at most 2 objects, the initial clause set is $ \mathcal{C} = \{\mathtt{target(X):-in(O1,X),in(O2,X).} \} $. Note that initial clause is a necessary clause since it is true on all the positive images.
 
-\subsection{Clause Generation by Extension}
-We getting new clauses by extend the existing clauses with knowing predicates in the language. In every experiment, the clause extension starting from the most general one, i.e. $ \mathtt{target(X):-in(O1,X),in(O2,X).} $, whereas the number of predicate $ in(O,X) $ depends on the related object number in the ground truth pattern. Assume there are $ 10 $ predicates exist in the language, to extend one predicate from initial clause can acquire 10 new clauses, to extend 2 predicates can acquire $ 10^2=100 $, and so on. For complicate patterns, the target clauses can require more than 5 predicates or more, thus a prune strategy is necessary during clause extension. We select the clauses those are either necessary or sufficient, which can significantly reduce the number of new clauses after extension.
+\paragraph{Extend}
+The input is either the initial clause set or the clauses set from pruning. For each clause in the set, we extend it with one predicate. Since there are many possible predicates to chose, any of them can be a promising one, thus we consider all the extension possibility into account. For example, to extend clause $ c $, if there are 10 predicates in the language, the number of extended clauses of $ c $ is up to 10, if all the extended clauses are consistent with itself.
+
+\paragraph{Evaluate}
+In order to find all the promising clauses, we evaluate all the extended new clauses or clustered clauses. For each evaluation unit, we evaluate it on the whole dataset and classify it based on its four score map.
+
+\paragraph{Pruning}
+Pruning is based on scores of each clause or clause cluster getting from evaluate state. A prune strategy is required in this step. In this paper, we select only top ranked necessary/sufficient clauses/clusters, the rests are pruned. 
+
+\paragraph{Cluster}
+The cluster is one step as preparation of high level concepts invention. 
+For example, if $ \mathtt{Blue}, \mathtt{Red} $ are the only appearing colors in all the scenes,  the concept $ \mathtt{two\_objs\_with\_same\_color} $ can be clustered by clauses 
 \begin{align*}
-	\mathtt{intermediate\_clause(Tree,Road)}&\mathtt{:-left(Tree,Road)}
+	\mathtt{two\_objs\_with\_same\_color(X)}&\mathtt{:-in(O1,X),in(O2,X),color(O1,Blue),color(O2,Blue).}\\ \mathtt{two\_objs\_with\_same\_color(X)}&:\mathtt{-in(O1,X),in(O2,X),color(O1,Red),color(O2,Red).}
 \end{align*}
+After pruning, if the max iteration of clause extension is exceed, the system will cluster the clauses. The input is clause set $ \mathcal{C} $. 
+We calculate all the subsets of $ \mathcal{C} $. Each subset is considered as one cluster. The number of clusters is up to $ 2^n $, where $ n=|\mathcal{C}| $ i.e. the size of clause set. Since it grows exponentially, for a large $ n $, we cannot evaluate all the subset. In order to improve the computation efficiency, the size of subset can be constrained with a threshold, to control the maximum size of the subset.
 
-\subsection{Predicate Invention by Clustering}
-New predicate invention happens after new clause generation. We acquire new predicates by clustering necessary clauses or sufficient clauses. The new predicates take clustered clauses as their bodies, where clauses in the cluster are considered with $ or $ relation. Clustering can take rules with sub-independent cases into account. For example, a tree placed either on the left side of the road or on the right side of the road can be represented by following predicates
+\paragraph{Inventing}
+The input of inventing state is the set of clause clusters. Each cluster is considered as a new predicate, where its body is the clause clusters. After invention, the new predicates update the language and the system goes to initial state again.
 
-\begin{align*}
-	\mathtt{inv\_pred(Tree,Road)}&\mathtt{:-left(Tree,Road)} 	\\	
-	\mathtt{inv\_pred(Tree,Road)}&\mathtt{:-right(Tree, Road)}
-\end{align*}
-To evaluate new predicates, we extent the initial clause with new predicates and evaluate them by four score map. If the new clause is necessary or  sufficient, the corresponding predicate is kept, otherwise it is pruned.
-
+\paragraph{Finish} 
+The system finish the rule searching if any sufficient and necessary predicate or clause is found or failed by exceeding the maximum iterations.
 
 
 
 
 \section{Experiments}
 To solve Kandinsky patterns, we provide following constants as background knowledge, 
-shape: circle, square, triangle; color: red, yellow, blue; group\_shape: line, unknown; distance: every 25 pixels as one unit. Besides, no further information is given, such as different color, different shape, etc. Some of the patterns are shown in figure \ref{fig:kandinsky-patterns}.
+shape: circle, square, triangle; color: red, yellow, blue; group\_shape: line, unknown; distance: every 25 pixels as one unit. Besides, no further information is given, such as different color, different shape, etc. Some of the tested patterns are shown in figure \ref{fig:kandinsky-patterns}.
 
 \begin{figure}[!htb]
 	\centering
@@ -311,49 +564,96 @@ shape: circle, square, triangle; color: red, yellow, blue; group\_shape: line, u
 \end{figure}
 
 
+
+\begin{figure}[!htb]
+	\centering
+	\subfigure[Three Same]{\includegraphics[width=0.24\textwidth]{img/3DKP/3_same.png}} 
+	\subfigure[Triangle Same]{\includegraphics[width=0.24\textwidth]{img/3DKP/two_pairs.png}} 
+	\subfigure[Cross]{\includegraphics[width=0.24\textwidth]{img/3DKP/cross_same_shape.png}} 
+	\subfigure[Check Mark]{\includegraphics[width=0.24\textwidth]{img/3DKP/check_mark.png}} 
+	\caption{3D Kandinsky Patterns. \textbf{Three Same}: This pattern always have 3 objects inside, three of them has same color and same shape. \textbf{Triangle Same}: This pattern always have 3 objects inside, three of them has same color and same shape. Besides, three objects form a triangle shape. \textbf{Cross}: this pattern always have 5 objects with same shape inside, the positions of 5 objects consists of an outline of cross mark. \textbf{Check Mark}: this pattern always have 5 objects with same color inside, the position of 5 objects consists of an outline of a cross mark.}
+	\label{fig:3DKP-patterns}
+\end{figure}
+
 Learning result of red-triangle pattern is shown as follows:
 
-\begin{lstlisting}[language=Prolog, mathescape]
-	target(X):-in(O1,X),in(O2,X),inv_pred25(O1,O2).
-	inv_pred0(O1,O2):-in(O1,X),in(O2,X),rho(O1,O2,rho2),shape(O1,circle).
-	inv_pred0(O1,O2):-in(O1,X),in(O2,X),rho(O1,O2,rho2),shape(O1,square).
-	inv_pred25(O1,O2):-color(O1,red),color(O2,blue),in(O1,X),in(O2,X),inv_pred0(O2,O1),shape(O1,triangle).
-	inv_pred25(O1,O2):-color(O1,red),color(O2,yellow),in(O1,X),in(O2,X),inv_pred0(O2,O1),shape(O1,triangle).
-	inv_pred25(O1,O2):-color(O1,red),color(O2,yellow),in(O1,X),in(O2,X),inv_pred0(O2,O1),shape(O2,circle).
-\end{lstlisting}
+%\begin{lstlisting}[language=Prolog, mathescape]
+\begin{figure}[t]
+	\centering
+	\begin{lstlisting}[language=Prolog,  style=Prolog-pygsty]
+
+(three same)
+kp(X):-in(O1,X),in(O2,X),in(O3,X),inv_pred2(O1,O2,O3).
+inv_pred2(O1,O2,O3):-color(O1,blue),color(O2,blue),color(O3,blue),
+	in(O1,X),in(O2,X),in(O3,X),shape(O1,cube),shape(O2,cube),shape(O3,cube).
+inv_pred2(O1,O2,O3):-color(O1,blue),color(O2,blue),color(O3,blue),in(O1,X),
+	in(O2,X),in(O3,X),shape(O1,sphere),shape(O2,sphere),shape(O3,sphere).
+inv_pred2(O1,O2,O3):-color(O1,green),color(O2,green),color(O3,green),in(O1,X),
+	in(O2,X),in(O3,X),shape(O1,cube),shape(O2,cube),shape(O3,cube).
+inv_pred2(O1,O2,O3):-color(O1,green),color(O2,green),color(O3,green),in(O1,X),
+	in(O2,X),in(O3,X),shape(O1,sphere),shape(O2,sphere),shape(O3,sphere).
+inv_pred2(O1,O2,O3):-color(O1,pink),color(O2,pink),color(O3,pink),in(O1,X),
+	in(O2,X),in(O3,X),shape(O1,cube),shape(O2,cube),shape(O3,cube).
+inv_pred2(O1,O2,O3):-color(O1,pink),color(O2,pink),color(O3,pink),in(O1,X),
+	in(O2,X),in(O3,X),shape(O1,sphere),shape(O2,sphere),shape(O3,sphere).
 
 
-The performance on each patterns in Kandinsky pattern is shown as follows:
-\begin{table}
-	\caption{PI Evaluation Result}
-	\label{tab:nearby-pi-result}
-	\begin{tabular}{ccccc}
-		\toprule
-		Module              & Nearby & Red-Triangle & Two Pairs & Online\\
-		\midrule
-		$\alpha$ILP 	    & 1.0 	    & 		    & 		    &           \\
-		$\alpha$ILP + PI    & 	1.0 	& 1.0	& 1.0	    &  1.0    \\
-		\bottomrule
-	\end{tabular}
-\end{table}
+(two pairs)
+kp(X):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),inv_pred30(O1,O2,O3,O4),
+	inv_pred7(O3,O4).
+inv_pred30(O1,O2,O3,O4):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),inv_pred2(O1,O2),
+	inv_pred2(O3,O4),inv_pred7(O1,O2).
+inv_pred7(O1,O2):-in(O1,X),in(O2,X),shape(O1,cube),shape(O2,cube).
+inv_pred7(O1,O2):-in(O1,X),in(O2,X),shape(O1,sphere),shape(O2,sphere).
+inv_pred2(O1,O2):-color(O1,blue),color(O2,blue),in(O1,X),in(O2,X).
+inv_pred2(O1,O2):-color(O1,green),color(O2,green),in(O1,X),in(O2,X).
+inv_pred2(O1,O2):-color(O1,pink),color(O2,pink),in(O1,X),in(O2,X).
 
+(cross mark)
+kp(X):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),in(O5,X),inv_pred15(O1,O2,O3,O4,O5).
+inv_pred3(O2,O3,O4,O5):-in(O2,X),in(O3,X),in(O4,X),in(O5,X),rho(O2,O5,rho2),
+	rho(O3,O4,rho2).
+inv_pred6(O1,O3,O4,O5):-in(O1,X),in(O3,X),in(O4,X),in(O5,X),
+	inv_pred3(O1,O3,O4,O5),phi(O3,O5,phi6),rho(O3,O5,rho1).
+inv_pred15(O1,O2,O3,O4,O5):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),in(O5,X),
+	inv_pred6(O2,O3,O4,O5),shape(O1,cube),shape(O2,cube),shape(O3,cube).
+inv_pred15(O1,O2,O3,O4,O5):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),in(O5,X),
+	inv_pred6(O2,O3,O4,O5),shape(O1,sphere),shape(O2,sphere),shape(O3,sphere).
 
+(check mark)
+kp(X):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),in(O5,X),inv_pred3(O1,O2,O3,O5),
+	inv_pred4(O2,O4,O5).
+inv_pred3(O1,O2,O3,O5):-in(O1,X),in(O2,X),in(O3,X),in(O5,X),rho(O1,O2,rho0),
+	rho(O3,O5,rho0).
+inv_pred4(O1,O2,O5):-in(O1,X),in(O2,X),in(O5,X),rho(O1,O2,rho0),rho(O1,O5,rho0).
+	\end{lstlisting}
+	\label{fig:rules_cross_3DKP}
+	\caption{Learned rules by NeSy-$\pi$ on 3D Kandinsky Pattern scenes.}
+\end{figure}
 
+The learning details on each patterns in Kandinsky pattern and 3D Scenes is shown in table \ref{tab:pi-result}. 
 \begin{table}
 	\centering
 	\caption{PI requirement and result on each patterns, where Ne-Preds means neural predicates.}
 	\label{tab:pi-result}
-	\begin{tabular}{ccccc}
+	\begin{tabular}{c|c|c|c|c|c|c|c|c}
+		\hline
 		\toprule
-		Patterns      &  \# of Concepts      & BK & BK-Clause & \# of Ne-Preds \\
-		\midrule
-		red-triangle &	3  & 0 	    & 	0	    &  4           \\
-		two-pairs   & 	4	& 	0 	& 0	& 3	        \\
-		5-obj-online &	1	& 	0 	& 0	&  	 1     \\
-		check-mark-en(random color) &	1	& 	0 	& 0	&  	 1    \\
-		check-mark-en(same color) &	1	& 	0 	& 0	&  	 1      \\
-		check-mark-en(same shape) &	1	& 	0 	& 0	&  	 1      \\
-		check-mark-en(same shape and color) &	1	& 	0 	& 0	&  	 1   \\
+		\multirow{2}*{Dataset} & \multirow{2}*{Patterns} &  \multirow{2}*{Iterations} &\multicolumn{2}{c|}{Times} & \multicolumn{2}{c|}{Accuracy} & \multicolumn{2}{c}{\# of Ne-Preds} \\
+		\cline{4-9}
+		 & & & $ \alpha$ILP & NeSy-$ \pi $ &$ \alpha$ILP & NeSy-$ \pi $&$ \alpha$ILP & NeSy-$ \pi $\\
+		\hline
+		\multirow{4}*{Kandinsky} &
+		red-triangle &	3  & 0 	    & & & & 	0	    &  4           \\
+		&two-pairs   & 	2	& 	0 	& & & & 0	& 3	        \\
+		&check-mark &		& 	0 	& & & & 0	&  	     \\
+		&cross-mark &		& 	0 	& & & & 0	&  	       \\
+		\hline
+		\multirow{4}*{3D Scenes} &
+		three same & 2  & 0 	    & & &  & 	0	    &       1      \\
+		&two-pairs  & 2		& 	0 	& & & & 0	& 	3        \\
+		&cross mark  & 	2	& 	0 	& & & & 0	& 	   3     \\
+		&check mark  & 	1	& 	0 	& & & & 0	& 	     2   \\
 		\bottomrule
 	\end{tabular}
 \end{table}
