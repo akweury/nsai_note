@@ -1,0 +1,39 @@
+\newsavebox{\speciesone}
+\sbox{\speciesone}{
+	\begin{tabular}{c |c |c}
+			& NeSy-ILP &  NeSy-$ \pi $ \\
+\hline 
+\multirow{3}*{Const} & \multicolumn{2}{c}{$\mathtt{ Object:O1/O2, Shape:Sphere/Cube}$,}\\
+& \multicolumn{2}{c}{$\mathtt{Color: Blue/Pink/Green}$ ,  }\\
+& \multicolumn{2}{c}{$\mathtt{Direction: Left/Right/Front/Behind}$}\\
+\hline 
+\multirow{2}*{Basic-Pred}
+ &\multicolumn{2}{c}{$\mathtt{color/2/obj,color;}$} \\
+  &\multicolumn{2}{c}{$\mathtt{ shape/2/obj,shape; dir/2/obj,obj }$} \\
+
+\hline
+\multirow{3}*{BK} & $\mathtt{b\_sp(O1):-color(O1,B),shape(O1,Sp).}$ & \multirow{3}*{-} \\
+& $\mathtt{g\_sp(O1):-color(O1,G),shape(O1,Sp).}$ & \\
+& $\mathtt{g\_cu(O1):-color(O1,G),shape(O1,Cu).}$ & \\ 
+\hline 
+\multirow{2}*{Pred} & $\mathtt{left\_side/2/obj,obj;}$& \multirow{2}*{-}\\
+& $\mathtt{right\_side/2/obj,obj}$&  \\
+	\end{tabular}
+}
+
+\begin{tikzpicture}
+		\node[inner sep=0pt] (t1) at (0,0) {\includegraphics[width=.15\textwidth]{img/intro_hide/true1.png}};
+%		\node[inner sep=0pt] (t2) at (3,0) {\includegraphics[width=.2\textwidth]{img/intro_hide/true2.png}};
+		\node[inner sep=0pt] (t3) at (2.4,0) {\includegraphics[width=.15\textwidth]{img/intro_hide/true3.png}};
+		
+		\node[inner sep=0pt] (f1) at (0,-2.4) {\includegraphics[width=.15\textwidth]{img/intro_hide/false1.png}};
+%		\node[inner sep=0pt] (f2) at (3,-3) {\includegraphics[width=.2\textwidth]{img/intro_hide/false2.png}};
+		\node[inner sep=0pt] (f3) at (2.4,-2.4) {\includegraphics[width=.15\textwidth]{img/intro_hide/false3.png}};
+		
+
+		\matrix (langMat) at (8.9,-1.2)[matrix of nodes] {
+			\node (species1) [shape=rectangle,draw] {\usebox{\speciesone}};\\
+		};
+	
+
+	\end{tikzpicture}

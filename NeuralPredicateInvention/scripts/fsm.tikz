@@ -1,0 +1,27 @@
+\begin{tikzpicture}[
+	roundnode/.style={circle, draw=green!60, fill=green!5, very thick,rounded corners, minimum size=7mm},
+	squarednode/.style={rectangle, draw=black!60, fill=black!0, very thick,rounded corners, minimum size=5mm},
+	]
+	%Nodes
+	\node[state,initial]      (init)        {Init.};
+	\node[state] (extension) [right=of init]	{Extend};
+	\node[state] (eval) [right=of extension]	{Eval.};	
+	\node[state] (prune) [below=of eval]	{Prune};	
+	\node[state]        (cluster)       [right=of eval] {Cluster.};	
+	\node[state]        (invent)       [right=of cluster] {Invent};
+	\node[state, accepting]      (target)       [below=of invent]	 {Finish};
+	%Lines
+	\draw (init) edge[bend right, above] node{} (extension)
+	(extension) edge[bend left, above] node {} (eval)
+	(eval) edge[right] node{} (prune)
+	(cluster) edge[bend right,above] node{} (eval)
+	(invent) edge[bend right, above] node{} (init)
+	(prune) edge[bend left, below] node{$ a $.} (extension)
+	(prune) edge[bend right,right] node{$ b $.} (cluster)
+	(prune) edge[bend right, below] node{succ./fail.} (target)
+	(prune) edge[bend right, below] node{$ c $.} (invent)
+	;
+	% \draw[->] (initclause.east) -- (language.west);
+	% \draw[->] (language.south) -- (extended.north);
+	%	\path (extension) edge[loop above] node[anchor=north,above]{Self Extension} (extension);
+\end{tikzpicture}
