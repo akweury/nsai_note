@@ -23,6 +23,10 @@
 \usepackage{tabularx}
 \usepackage{multirow}
 \usepackage{blindtext}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{euler}  
+\usepackage{xcolor}
 \usetikzlibrary{positioning,automata,arrows, matrix}
 \tikzset{
 	->,  % makes the edges directed
@@ -33,7 +37,7 @@
 }
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{definition}{Definition}[section]
-\usepackage{xcolor}
+
 \newcommand{\js}[1]{\textcolor{OliveGreen}{[#1 \textsc{--Jing}]}}
 \newcommand{\dd}[1]{\textcolor{red}{[#1 \textsc{--Dev}]}}
 \newcommand{\hk}[1]{\textcolor{Apricot}{[#1 \textsc{--HK}]}}
@@ -334,7 +338,6 @@
 	%%
 	%% This command processes the author and affiliation and title
 	%% information and builds the first part of the formatted document.
-	\maketitle
 	
 	\section{Introduction}
 	
@@ -549,7 +552,14 @@
 			\label{fig:pn-pair}
 		\end{minipage}
 	\end{figure*}
-	
+
+		\begin{figure*}[t]
+	\centering
+	\includegraphics[width=0.8\textwidth]{scripts/polar.tikz}
+	\caption{Neural Predicates.}
+	\label{fig:nesy.}
+	\end{figure*}
+
 	
 	A \textbf{four score map} fuzzy the evaluation result on an image to positive 1 and negative 0, map the positive image result and negative image result to four areas, namely $ (0,0), (0,1), (1,0) $ and $ (1,1) $. We found that four score map has good description for sufficient and necessary conditions in logic.
 	
@@ -569,7 +579,32 @@
 	
 	The key idea of these definitions is to provide an evaluation metric for searched clauses. Since it is impossible to consider all the clauses for rule searching, an efficient pruning strategy is necessary. Our pruning strategy is mainly based on the satisfaction of the clauses on these definitions. 
 	
-	
+	\begin{algorithm}
+		\caption{NeSy-$ \pi $}\label{alg:pi}
+		\begin{algorithmic}
+			\State $C \gets C_0$
+			\State $L \gets L_0$
+			\While{ step < maxStep and not $succeed$}
+			\For{$i\gets 1, ..., step $}
+			\State $ C_{extended} \gets extend(C, L)$
+			\State $S_c \gets  eval (C_{extended})$
+			\State $C_{sn},C_{nc},C_{sc}, C_{uc} \gets  prune(C_{extended}, S_c)$
+			\EndFor 
+			\If {$C_{sn}.length()>0:$}
+			\State $succeed \gets true$
+			\State break
+			\EndIf 
+			\State $ C_{clu} \gets  cluster(C_{sn},C_{nc},C_{sc}, C_{uc} ) $
+			\State $ S_{clu} \gets eval(C_{clu})$
+			\State $ Clu_{sn}, Clu_{nc}, Clu_{sc}, Clu_{uc} \gets  prune(C_{clu}, S_{clu})$  
+			\State $P_{new} \gets invent(L, Clu_{sn}, Clu_{nc}, Clu_{sc}, Clu_{uc})$
+			\State $ L \gets update(L, P_{new})  $
+			\State $step \gets step + 1$
+			\EndWhile
+			\State Train NSFR model
+		\end{algorithmic}
+	\end{algorithm}
+
 	\begin{figure*}[t]
 		\centering
 		\includegraphics[width=0.8\textwidth]{scripts/fsm.tikz}
@@ -684,26 +719,26 @@ rho(O3,O4,rho2).
 	
 	\begin{table}
 		\centering
-		\caption{Experiment result on 2D Kandinsky Patterns and 3D Kandinsky Patterns. The dataset of each experiment has 64 PN pairs. Batch size is 8. All the experiments are tested on a single NVIDIA A100 GPU. }
+		\caption{Experiment result on 2D Kandinsky Patterns and 3D Kandinsky Patterns. The dataset of each experiment has 64 PN pairs. Batch size is 2. All the experiments are tested on a single NVIDIA A100 GPU. }
 		\label{tab:pi-result}
-		\begin{tabular}{c|c|c|c|c|c|c|c|c}
+		\begin{tabular}{c|c|c|c|c|c|c|c|c|c|c}
 			\hline
 			\toprule
-			\multirow{2}*{Dataset} & \multirow{2}*{Patterns} &  \multirow{2}*{Iterations} &\multicolumn{2}{c|}{Times} & \multicolumn{2}{c|}{Accuracy} & \multicolumn{2}{c}{\# of Ne-Preds} \\
-			\cline{4-9}
-			& & & $ \alpha$ILP & NeSy-$ \pi $ &$ \alpha$ILP & NeSy-$ \pi $&$ \alpha$ILP & NeSy-$ \pi $\\
+			\multirow{2}*{Dataset} & \multirow{2}*{Patterns} &\multirow{2}*{BS} &  \multicolumn{2}{c|}{Iterations} &\multicolumn{2}{c|}{Time} & \multicolumn{2}{c|}{Accuracy} & \multicolumn{2}{c}{\# of Ne-Preds} \\
+			\cline{4-11}
+			& & & $\alpha$ILP & NeSy-$ \pi $ & $ \alpha$ILP & NeSy-$ \pi $ &$ \alpha$ILP & NeSy-$ \pi $&$ \alpha$ILP & NeSy-$ \pi $\\
 			\hline
 			\multirow{4}*{2D KP} &
-			red-triangle &	3  & 0 	    & & & & 	0	    &  4           \\
-			&two-pairs   & 	2	& 	0 	& & & & 0	& 3	        \\
-			&check-mark &		& 	0 	& & & & 0	&  	     \\
-			&cross-mark &		& 	0 	& & & & 0	&  	       \\
+			red triangle &	&  &  	&    & & & & 		    &             \\
+			&two pairs   & 	&	& &	 	& & & & 	& 	        \\
+			&check mark &	&	& &	 	& & & & 	&  	     \\
+			&cross mark &	&	& &	 	& & & & 	&  	       \\
 			\hline
 			\multirow{4}*{3D KP} &
-			three same & 2  & 0 	    & & &  & 	0	    &       1      \\
-			&two-pairs  & 2		& 	0 	& & & & 0	& 	3        \\
-			&cross mark  & 	2	& 	0 	& & & & 0	& 	   3     \\
-			&check mark  & 	1	& 	0 	& & & & 0	& 	     2   \\
+			three same &  8 & 5 & 3	& 54.55s   & 48.81s &  0.55 & 1.0 & 		  4  &       4 (+3)      \\
+			&two pairs  & 8 & 5 & 3 & 	 27.90s	& 217.33s  & 0.62 & 1.0 & 4	& 4 (+5)  \\
+			&cross mark  & 2 & 5 &   &	 	&  &  &  & 10 	& 	10 (+)        \\
+			&check mark  & 2 & 4 & 2  & 1162.88s  & 1157.98s & 0.875 & 1.0 &  12	& 	12 (+1)  \\
 			\bottomrule
 		\end{tabular}
 	\end{table}
