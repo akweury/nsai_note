@@ -77,8 +77,7 @@
    <dc:description><rdf:Alt><rdf:li xml:lang="x-default">CEUR Workshop Proceedings (CEUR-WS.org)</rdf:li></rdf:Alt></dc:description>
    <dc:subject><rdf:Bag><rdf:li>Predicate Invention </rdf:li>
      <rdf:li>Inductive Logic Programming </rdf:li>
-     <rdf:li>Neural Symbolic Artificial Intelligence</rdf:li>
-     <rdf:li></rdf:li></rdf:Bag></dc:subject>
+     <rdf:li>Neural Symbolic Artificial Intelligence</rdf:li></rdf:Bag></dc:subject>
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:prism="http://prismstandard.org/namespaces/basic/2.2/"> 
    <prism:aggregationType>journal</prism:aggregationType>
@@ -92,9 +91,9 @@
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/"> 
    <xmp:CreatorTool>LaTeX with hyperref</xmp:CreatorTool> 
-   <xmp:ModifyDate>2023-03-16T16:34:02+01:00</xmp:ModifyDate> 
-   <xmp:CreateDate>2023-03-16T16:34:02+01:00</xmp:CreateDate> 
-   <xmp:MetadataDate>2023-03-16T16:34:02+01:00</xmp:MetadataDate> 
+   <xmp:ModifyDate>2023-03-16T21:48:26+01:00</xmp:ModifyDate> 
+   <xmp:CreateDate>2023-03-16T21:48:26+01:00</xmp:CreateDate> 
+   <xmp:MetadataDate>2023-03-16T21:48:26+01:00</xmp:MetadataDate> 
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:xmpRights = "http://ns.adobe.com/xap/1.0/rights/"> 
    <xmpRights:Marked>True</xmpRights:Marked>
@@ -103,7 +102,7 @@
   </rdf:Description> 
   <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/"> 
    <xmpMM:DocumentID>uuid:D0FAFD88-6B6D-39DB-0E19-5C5EE4525F4C</xmpMM:DocumentID> 
-   <xmpMM:InstanceID>uuid:59CE7CBC-6B1A-9E2F-84C5-A61A14264C51</xmpMM:InstanceID> 
+   <xmpMM:InstanceID>uuid:E969131D-F9C3-4BBA-3E56-0F1B40F39968</xmpMM:InstanceID> 
   </rdf:Description> 
  </rdf:RDF> 
 </x:xmpmeta> 

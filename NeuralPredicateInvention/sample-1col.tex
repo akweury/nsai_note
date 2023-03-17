@@ -21,9 +21,9 @@
 \usepackage{tikzscale}
 \usepackage{amsmath}
 \usepackage{tabularx}
-\usepackage{slashbox}
 \usepackage{multirow}
-\usetikzlibrary{positioning,automata,arrows}
+\usepackage{blindtext}
+\usetikzlibrary{positioning,automata,arrows, matrix}
 \tikzset{
 	->,  % makes the edges directed
 	>=stealth, % makes the arrow heads bold
@@ -34,6 +34,7 @@
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{definition}{Definition}[section]
 \usepackage{xcolor}
+\newcommand{\js}[1]{\textcolor{OliveGreen}{[#1 \textsc{--Jing}]}}
 \newcommand{\dd}[1]{\textcolor{red}{[#1 \textsc{--Dev}]}}
 \newcommand{\hk}[1]{\textcolor{Apricot}{[#1 \textsc{--HK}]}}
 \newcommand{\todo}[1]{\textcolor{blue}{[#1 \textsc{--TODO}]}}
@@ -230,1037 +231,568 @@
 %%% End for Prolog Listings
 %%%
 
-%%%
-%%% End for Prolog Listings
-%%%
+
 
 %%
 %% end of the preamble, start of the body of the document source.
 \begin{document}
-
-%%
-%% Rights management information.
-%% CC-BY is default license.
-\copyrightyear{2022}
-\copyrightclause{Copyright for this paper by its authors.
-  Use permitted under Creative Commons License Attribution 4.0
-  International (CC BY 4.0).}
-
-%%
-%% This command is for the conference information
-\conference{Woodstock'22: Symposium on the irreproducible science,
-  June 07--11, 2022, Woodstock, NY}
-
-%%
-%% The "title" command
-\title{Neural-Symbolic Predicate Invention: \\Learning Relational Concepts from Visual Scenes}
-
-\tnotemark[1]
-\tnotetext[1]{You can use this document as the template for preparing your
-  publication. We recommend using the latest version of the ceurart style.}
-
-%%
-%% The "author" command and its associated commands are used to define
-%% the authors and their affiliations.
-\author[1,2]{Dmitry S. Kulyabov}[%
-orcid=0000-0002-0877-7063,
-email=kulyabov-ds@rudn.ru,
-url=https://yamadharma.github.io/,
-]
-\cormark[1]
-\fnmark[1]
-\address[1]{Peoples' Friendship University of Russia (RUDN University),
-  6 Miklukho-Maklaya St, Moscow, 117198, Russian Federation}
-\address[2]{Joint Institute for Nuclear Research,
-  6 Joliot-Curie, Dubna, Moscow region, 141980, Russian Federation}
-
-\author[3]{Ilaria Tiddi}[%
-orcid=0000-0001-7116-9338,
-email=i.tiddi@vu.nl,
-url=https://kmitd.github.io/ilaria/,
-]
-\fnmark[1]
-\address[3]{Vrije Universiteit Amsterdam, De Boelelaan 1105, 1081 HV Amsterdam, The Netherlands}
-
-\author[4]{Manfred Jeusfeld}[%
-orcid=0000-0002-9421-8566,
-email=Manfred.Jeusfeld@acm.org,
-url=http://conceptbase.sourceforge.net/mjf/,
-]
-\fnmark[1]
-\address[4]{University of Skövde, Högskolevägen 1, 541 28 Skövde, Sweden}
-
-%% Footnotes
-\cortext[1]{Corresponding author.}
-\fntext[1]{These authors contributed equally.}
-
-%%
-%% The abstract is a short summary of the work to be presented in the
-%% article.
-\begin{abstract}
-The predicates used for Inductive Logic Programming (ILP) systems are typically elusive and need to be hand-crafted in advance limiting the generalization of the system when learning new rules without sufficient background knowledge. Predicate Invention (PI) for ILP is the problem of discovering new concepts that describe hidden relationships in the domain. PI can mitigate the generalization problem by inferring new concepts such that the system gains better vocabularies to compose logic rules to solve problems. Although several PI approaches for symbolic ILP systems exist, PI for NeSy ILP systems, which can deal with visual inputs to learn logic rules using differentiable reasoning, is relatively unaddressed. To this end, we propose a neural-symbolic approach to invent predicates from visual scenes for NeSy ILP systems based on clustering and extension of relational concepts. Our NeSy PI model handles visual scenes as its input using deep neural networks for the visual perception, and invents new concepts which are useful to solve the task of classifying complex visual scenes. The invented concepts can be used by NeSy ILP systems instead of hand-crafted background knowledge. Our experiments show that the PI model is capable of inventing high-level concepts and solving complex visual logical patterns. Moreover, the invented concepts are explainable and interpretable while also providing competitive results with the state of the art NeSy ILP systems with given knowledge.
-\end{abstract}
-
-%%
-%% Keywords. The author(s) should pick words that accurately describe
-%% the work being presented. Separate the keywords with commas.
-\begin{keywords}
-	Predicate Invention \sep
-	Inductive Logic Programming \sep
-	Neural Symbolic Artificial Intelligence\sep
-\end{keywords}
-
-%%
-%% This command processes the author and affiliation and title
-%% information and builds the first part of the formatted document.
-\maketitle
-
-\section{Introduction}
-
-%% we are not research PI, but use PI as an approch to help NeSy-ILP find the target clause more quickly and accurately.
-
-
-%% propose the task
-Neural Symbolic Inductive Logical Programming (NeSy-ILP) learns logical programs from images. 
-Such learned program sences the inherent logic in the Visual Scenes and consider them as rules for classification task.  An example of such patterns is shown in figure \ref{fig:intro-hide}. In order to solve such patterns, a set of predicates are required, for example $\mathtt{blue\_sphere} $ defines the existence of a sphere with color blue. 
-%TODO: add one scentence to argue the importance and the difficuty
-
-%% BK is hard acquired
-However, to describe logical relations, these predicates in NeSy-ILP systems without PI support are either trained by neural network as pretrained neural predicates or explained by hand-crafted background knowledge. 
-If any background knowledge is missing or neural predicates has wrong prediction, the optimal program searching can be failed. Besides, background knowledge can be hard to collect and usually provided by human experts, which limits the applying domain of ILP systems. Thus it is essential for system to conquer the problem of such dependence.
-
-%% introduce PI
-Predicate invention(PI)\cite{pi1988} is one direction to solve this problem, which is also a sub-problem in ILP. It works for ILP system to invent new predicates as symbols for new concepts from well designed basic predicates, which enlarge the expression of the language in ILP and consequently reduce the dependence on human experts. 
-%% explain by an example
-One simple example is the concept of a sphere with blue color, in NeSy-ILP system, the concept $ \mathtt{blue\_sphere} $ can be explained by a clause $\mathtt{blue\_sphere(X):-Color(X,blue),Shape(X,sphere).} $ which is given as BK knowledge, but with PI system, such concepts are learned from separate basic predicates $ \mathtt{Color(X,blue)} $ and $ \mathtt{Shape(X,sphere)} $ by concatenation. 
-
-
-%% Tell some reasons if possible
-
-\begin{figure*}[h]
-	\centering
-	\begin{minipage}{0.4\textwidth}
-		\centering
-		\includegraphics[width=0.3\linewidth]{img/intro_hide/true1.png} 
-		\includegraphics[width=0.3\linewidth]{img/intro_hide/true2.png} 
-		\includegraphics[width=0.3\linewidth]{img/intro_hide/true3.png} 
+	
+	%%
+	%% Rights management information.
+	%% CC-BY is default license.
+	\copyrightyear{2022}
+	\copyrightclause{Copyright for this paper by its authors.
+		Use permitted under Creative Commons License Attribution 4.0
+		International (CC BY 4.0).}
+	
+	%%
+	%% This command is for the conference information
+	\conference{Woodstock'22: Symposium on the irreproducible science,
+		June 07--11, 2022, Woodstock, NY}
+	
+	%%
+	%% The "title" command
+	\title{Neural-Symbolic Predicate Invention: \\Learning Relational Concepts from Visual Scenes}
+	
+	% \tnotemark[1]
+	% \tnotetext[1]{You can use this document as the template for preparing your
+		%   publication. We recommend using the latest version of the ceurart style.}
+	
+	%%
+	%% The "author" command and its associated commands are used to define
+	%% the authors and their affiliations.
+	\author[1,2]{Dmitry S. Kulyabov}[%
+	orcid=0000-0002-0877-7063,
+	email=kulyabov-ds@rudn.ru,
+	url=https://yamadharma.github.io/,
+	]
+	\cormark[1]
+	\fnmark[1]
+	\address[1]{Peoples' Friendship University of Russia (RUDN University),
+		6 Miklukho-Maklaya St, Moscow, 117198, Russian Federation}
+	\address[2]{Joint Institute for Nuclear Research,
+		6 Joliot-Curie, Dubna, Moscow region, 141980, Russian Federation}
+	
+	\author[3]{Ilaria Tiddi}[%
+	orcid=0000-0001-7116-9338,
+	email=i.tiddi@vu.nl,
+	url=https://kmitd.github.io/ilaria/,
+	]
+	\fnmark[1]
+	\address[3]{Vrije Universiteit Amsterdam, De Boelelaan 1105, 1081 HV Amsterdam, The Netherlands}
+	
+	\author[4]{Manfred Jeusfeld}[%
+	orcid=0000-0002-9421-8566,
+	email=Manfred.Jeusfeld@acm.org,
+	url=http://conceptbase.sourceforge.net/mjf/,
+	]
+	\fnmark[1]
+	\address[4]{University of Skövde, Högskolevägen 1, 541 28 Skövde, Sweden}
+	
+	%% Footnotes
+	\cortext[1]{Corresponding author.}
+	\fntext[1]{These authors contributed equally.}
+	
+	%%
+	%% The abstract is a short summary of the work to be presented in the
+	%% article.
+	\begin{abstract}
+		The predicates used for Inductive Logic Programming (ILP) systems are typically elusive and need to be hand-crafted in advance limiting the generalization of the system when learning new rules without sufficient background knowledge. Predicate Invention (PI) for ILP is the problem of discovering new concepts that describe hidden relationships in the domain. PI can mitigate the generalization problem by inferring new concepts such that the system gains better vocabularies to compose logic rules to solve problems. Although several PI approaches for symbolic ILP systems exist, PI for NeSy ILP systems, which can deal with visual inputs to learn logic rules using differentiable reasoning, is relatively unaddressed. To this end, we propose a neural-symbolic approach, NeSy-$\pi$, to invent predicates from visual scenes for NeSy ILP systems based on clustering and extension of relational concepts. NeSy-$\pi$ handles visual scenes as its input using deep neural networks for the visual perception, and invents new concepts which are useful to solve the task of classifying complex visual scenes. The invented concepts can be used by any NeSy ILP systems instead of hand-crafted background knowledge. Our experiments show that the PI model is capable of inventing high-level concepts and solving complex visual logical patterns more efficiently in absence of explicit background knowledge. Moreover, the invented concepts are explainable and interpretable while also providing competitive results with the state of the art NeSy ILP systems with given knowledge.
 		
-		\includegraphics[width=0.3\linewidth]{img/intro_hide/false1.png} 
-		\includegraphics[width=0.3\linewidth]{img/intro_hide/false2.png}
-		\includegraphics[width=0.3\linewidth]{img/intro_hide/false3.png}
-		\label{fig:intro-hide}
-	\end{minipage}
-	\caption{A logic Pattern in 3D scenes can be learned by Neural-Symbolic ILP system. Positive images on the first row, negative images on the second row. The truth pattern is: a blue sphere either locate on the left side of a green sphere or locate on the right side of a green cube.}
-\end{figure*}
-
-
-\begin{table}
-	\caption{Comparison of language requirement between NeSy-ILP and NeSy-$ \pi $. Meaning of abbreviations in the table: Const-Constant. BK-Background Knowledge. Ne-Pred-Neural Predicate. }
-	\label{tab:ilp-pi-compare}
-	\begin{tabular}{c|c|c}
-		\hline
-		\toprule
-		 & NeSy-ILP &  NeSy-$ \pi $ \\
-		 \hline 
-		\multirow{2}*{Const} & \multicolumn{2}{c}{$\mathtt{ Object:O1/O2, Color: Blue/Pink/Green}$}\\
-		& \multicolumn{2}{c}{$\mathtt{Shape:Sphere/Cube}$ ,  $\mathtt{Direction: Left/Right/Front/Behind}$}\\
-		\hline 
-		Basic-Pred &\multicolumn{2}{c}{$\mathtt{color/2/obj,color;shape/2/obj,shape; dir/2/obj,obj}$} \\ 
-		\hline
-		\multirow{3}*{BK} & $\mathtt{b\_sp(O1):-color(O1,Blue),shape(O1,Sphere).}$ & \multirow{3}*{-} \\
+	\end{abstract}
+	
+	%%%
+	%%% Previous version
+	%%%
+	\if0
+	\begin{abstract}
+		Predicate Invention (PI) for neural symbolic inductive logic programming (NeSy-ILP) is the problem of discovering new concepts that describe hidden relationships in structured image datasets. It is an important problem because the predicates used for NeSy-ILP systems are typically elusive and need to be trained in advance, which limits the generalization of the system when learning new programs. 
+		PI can mitigate the problem of insufficient vocabulary in the logic language by inferring new concepts directly from basic atomic facts or with a little help from given background knowledge. 
+		Many PI approaches have been developed for symbolic ILP systems, however, PI for Ne-Sy ILP systems have not been addressed. %On the other hand, however, PI is a difficult problem because we do not know when and how to invent new predicates.
+		
+		We propose a NeSy-PI approach to invent predicates from visual scenes for NeSy-ILP systems based on clustering and extension.
+		%The system takes visual facts attained by perception models as input, which cannot be done by pure symbolic systems. 
+		Our NeSy-PI model handles visual scenes as its input using deep neural networks for the perception, and invents new concepts which are useful to solve the classification task of the complex visual scenes. The invented concepts can be used by Ne-Sy ILP systems instead of hand-crafted background knowledge.
+		Our experiments show that the PI model is capable of inventing high-level concepts and solving complex visual logical patterns . 
+		Moreover, the invented concepts are explainable and interpretable and competitive with the state of the art neural symbolic ILP systems with given knowledge.
+		
+	\end{abstract}
+	\fi
+	%%%
+	%%%
+	%%%
+	
+	%%
+	%% Keywords. The author(s) should pick words that accurately describe
+	%% the work being presented. Separate the keywords with commas.
+	\begin{keywords}
+		Predicate Invention \sep
+		Inductive Logic Programming \sep
+		Neural Symbolic Artificial Intelligence
+	\end{keywords}
+	
+	%%
+	%% This command processes the author and affiliation and title
+	%% information and builds the first part of the formatted document.
+	\maketitle
+	
+	\section{Introduction}
+	
+	
+	%% we are not research PI, but use PI as an approch to help NeSy-ILP find the target clause more quickly and accurately.
+	
+	%% what is ILP and PI, why we care them about
+	Inductive Logic Programming (ILP) is a set of techniques to learn generalized logic programs given data~\cite{Muggleton91,Nienhuys97,Cropper20}.
+	In contrast to Deep Neural Networks (DNNs), ILP gains vital advantages, \eg it can learn explanatory rules from small data.
+	However, predicates for ILP systems are typically elusive and need to be hand-crafted and thus they require much priors to compose solutions.
+	%% introduce PI
+	Predicate invention (PI) systems invent new predicates as symbols for new concepts from well designed primitive predicates, which enlarge the expression of the language in ILP and consequently reduce the dependence on human experts~\cite{pi1988}. 
+	%% explain by an example
+	One simple example is the concept of a sphere with blue color, in NeSy-ILP system, the concept $ \mathtt{blue\_sphere} $ can be explained by a clause $\mathtt{blue\_sphere(X):-Color(X,blue),Shape(X,sphere).} $ which is given as BK knowledge, but with PI system, such concepts are learned from separate basic predicates $ \mathtt{Color(X,blue)} $ and $ \mathtt{Shape(X,sphere)} $ by concatenation. 
+	
+	
+	
+	
+	
+	%% neuro-symbolic ILP has emerged because...
+	%% propose the task
+	%Neural-Symbolic ILP systems have been developed 
+	Recently, neural-symbolic ILP frameworks have been proposed~\cite{Evans2018,Shindo2023alphailp}, which embrace DNNs for visual perception and learn explanatory rules from raw inputs.
+	NeSy-ILP systems overcome pure neural-based baselines on visual reasoning tasks where the answers are derived by reasoning about attributes of the objects and their relations.
+	%Neural Symbolic Inductive Logical Programming (NeSy-ILP) learns logical programs from images. 
+	%Such learned program sences the inherent logic in the Visual Scenes and consider them as rules for classification task.  An example of such patterns is shown in figure \ref{fig:intro-hide}. In order to solve such patterns, a set of predicates are required, for example $\mathtt{blue\_sphere} $ defines the existence of a sphere with color blue. 
+	%TODO: add one scentence to argue the importance and the difficuty
+	However, current NeSy-ILP systems has a crucial drawback of assuming all of the predicates to be needed are given as background knowledge., \eg pretrained neural predicates or explained by hand-crafted background knowledge, and thus
+	%% BK is hard acquired
+	%Predicates in NeSy-ILP systems without PI support are either trained by neural network as pretrained neural predicates or explained by hand-crafted background knowledge. 
+	%If the quality of the background knowledge is not sufficient, the optimal program searching can be failed. 
+	optimal programs are hard to be discovered without sufficient background knowledge. 
+	Moreover, the collection of background knowledge is very costly, since it needs to be provided by human experts or requires pre-training of neural modules with additional supervision.
+	%background knowledge can be hard to collect and usually provided by human experts, which limits the applying domain of ILP systems. Thus it is essential for system to conquer the problem of such dependence.
+	%% problems that PI can solve or relief
+	%However, most ILP system doesn't support PI. If such background knowledge is not provided, NeSy-ILP system may still find such concatenation of predicates but they are never considered as a single concept and be used as a whole in new clauses but only be search one predicate by one predicate, it has two major drawbacks, 1. it can lead to incomplete concept explanation if any single predicate is failed to be searched; 2. it can make the target clauses too long to search, which is not time efficiency at all.
+	%In our PI system, such background knowledge is not required but they can be collected during the target clause searching, which can both simplify and precise the target clause.
+	This limits severely the applicaility of the NeSy-ILP systems to different domains.
+	In contrast, DNNs such as Transformers require a minimal prior and gain high performance by learning from data, and thus have been successfully applied to various different domains.
+	How can we realize a NeSy-ILP system that can learn from less background knowledge?
+	\hk{highlight spatial relationships as the issue}
+	%% nesyILP achived accuracy but expect a lot of prior
+	%% 
+	
+	
+	
+	
+	%% Tell some reasons if possible
+	
+		\begin{figure*}[t]
+		\centering
+		\includegraphics{scripts/intro.tikz}
+		\caption{A logic Pattern in 3D scenes can be learned by Neural-Symbolic ILP system. \textbf{Left}: Positive images on the first row, negative images on the second row. The truth pattern is: a blue sphere either locate on the left side of a green sphere or locate on the right side of a green cube. \textbf{Right}: Comparison of language requirement between NeSy-ILP and NeSy-$ \pi $. Meaning of abbreviations in the table: Const-Constant. BK-Background Knowledge. Ne-Pred-Neural Predicate. B-Blue, G-Green,Sp-Sphere, Cu-Cube. }
+		\label{fig:intro}
+	\end{figure*}
+	
+	\begin{figure*}[t]
+		\centering
+		\begin{minipage}{0.4\textwidth}
+			\centering
+			\includegraphics[width=0.3\linewidth]{img/intro_hide/true1.png} 
+			\includegraphics[width=0.3\linewidth]{img/intro_hide/true2.png} 
+			\includegraphics[width=0.3\linewidth]{img/intro_hide/true3.png} 
+			
+			\includegraphics[width=0.3\linewidth]{img/intro_hide/false1.png} 
+			\includegraphics[width=0.3\linewidth]{img/intro_hide/false2.png}
+			\includegraphics[width=0.3\linewidth]{img/intro_hide/false3.png}
+			\label{fig:intro-hide}
+		\end{minipage}
+		\caption{A logic Pattern in 3D scenes can be learned by Neural-Symbolic ILP system. Positive images on the first row, negative images on the second row. The truth pattern is: a blue sphere either locate on the left side of a green sphere or locate on the right side of a green cube.}
+	\end{figure*}
+				
+	\begin{table}[t]
+		\caption{Comparison of language requirement between NeSy-ILP and NeSy-$ \pi $. Meaning of abbreviations in the table: Const-Constant. BK-Background Knowledge. Ne-Pred-Neural Predicate.\js{where to put this table?} \dd{besides Fig 1 as before}}
+		\label{tab:ilp-pi-compare}
+		\begin{tabular}{c|c|c}
+			\hline
+			\toprule
+			& NeSy-ILP &  NeSy-$ \pi $ \\
+			\hline 
+			\multirow{2}*{Const} & \multicolumn{2}{c}{$\mathtt{ Object:O1/O2, Color: Blue/Pink/Green}$}\\
+			& \multicolumn{2}{c}{$\mathtt{Shape:Sphere/Cube}$ ,  $\mathtt{Direction: Left/Right/Front/Behind}$}\\
+			\hline 
+			Basic-Pred &\multicolumn{2}{c}{$\mathtt{color/2/obj,color;shape/2/obj,shape; dir/2/obj,obj}$} \\ 
+			\hline
+			\multirow{3}*{BK} & $\mathtt{b\_sp(O1):-color(O1,Blue),shape(O1,Sphere).}$ & \multirow{3}*{-} \\
 			& $\mathtt{g\_sp(O1):-color(O1,Green),shape(O1,Sphere).}$ & \\
-		 	& $\mathtt{g\_cu(O1):-color(O1,Green),shape(O1,Cube).}$ & \\ 
-		 \hline 
-		Ne-Pred & $\mathtt{left\_side/2/obj,obj;right\_side/2/obj,obj}$& - \\
-		\bottomrule
-	\end{tabular}
-\end{table}
-
-%% problems that PI can solve or relief
-However, most ILP system doesn't support PI. If such background knowledge is not provided, NeSy-ILP system may still find such concatenation of predicates but they are never considered as a single concept and be used as a whole in new clauses but only be search one predicate by one predicate, it has two major drawbacks, 1. it can lead to incomplete concept explanation if any single predicate is failed to be searched; 2. it can make the target clauses too long to search, which is not time efficiency at all.
-In our PI system, such background knowledge is not required but they can be collected during the target clause searching, which can both simplify and precise the target clause.
-
-%% motivation of this paper, and point out the importance of this paper
-The goal of our work is to find a predicate invention pipeline and concatenate it with existing NeSy-ILP system, so that some high level concepts are not necessarily given from reasoning language directly. But they can be invented as needed during training. It can improve the system independence on human experts and also improves the generalization of AI models for adapting unseen tasks. 
-
-%% works of this paper and its contribution
-In this paper, we mainly focus on object property and their spatial relationships comparison. In order to using a single language to cover two objects spatial relations as many as possible, we designed an area division map called \textit{target map} as shown in figure \ref{fig:8-area}, they are mapped to neural predicates as consider as basic predicates for PI model. As we shown in the experiment, the concepts like left, right, nearby supposed to be invented as new predicates during the training if any of them are needed to represent the target pattern in the positive images.  This map both considers the distance and directions of the latent relation objects. 
-
-The target clause is searched in a top-bottom way, i.e. we start from most general rules and extend the rules by adding predicates as constraints. The size of searching domain for the target clause is growth exponentially over its length, which make the evaluation very time consuming. Since a naive pruning strategy can eliminate the global optimal clause. 
-We designed an evaluation function based on the characteristics of necessity and sufficiency of the clause, which can scoring the searched clauses and keep the promising ones for further extension.
-
-We propose NeSy-$\pi$, a neural-symbolic PI approach, based on \textit{clustering} and \textit{extension} of relational concepts, which is able to reasoning visual scenes without background knowledge. The knowledge can be summarized from scenes. It evaluates the clauses based on its characteristics of necessity and sufficiency. The procedure is repeated iteration by iteration, until the target clauses are found. We tested our approach on both 2D and 3D image patterns.
-
-Comparing to existing approaches, our approach has following contributions
-
-\begin{itemize}
-	\item We proposed a predicate invention approach for neural-symbolic ILP system.
-	\item A formalized way to efficiently evaluate the clauses in visual scenes, which can be further used for pruning strategy.
-	\item We discussed about \textit{when} and \textit{how} to invent new predicates based on \textit{necessary} and \textit{sufficient} judgment factors.
-	\item The provide an implementation of this approach.
+			& $\mathtt{g\_cu(O1):-color(O1,Green),shape(O1,Cube).}$ & \\ 
+			\hline 
+			Ne-Pred & $\mathtt{left\_side/2/obj,obj;right\_side/2/obj,obj}$& - \\
+			\bottomrule
+		\end{tabular}
+	\end{table}
 	
-\end{itemize}
+	
+	\begin{figure}
+		\centering
+		\includegraphics[width=\linewidth]{img/nesypi.pdf}
+		\caption{\textbf{NeSy-$\pi$ architecture.} NeSy-$\pi$ invents relational concepts given visual scenes. The invented predicates are fed into a NeSy-ILP solver to learn classification rules. NeSy-ILP solver generates candidates of rules using given predicates, performs differentiable reasoning using weighted clauses, and optimize the clause weights by gradient descent. To this end, the classification rules can be composed efficiently using the invented predicates. (Best viewed in color) \hk{first draft, should be improved} \hk{do we have the opposite arrow: NeSy-ILP -> NeSy-pi in the system?}}
+		\label{fig:nesypi}
+	\end{figure}
+	
+	%% motivation of this paper, and point out the importance of this paper
+	To mitigate this issue, we propose Neural-Symbolic Predicate Invention (NeSy-$\pi$), a predicate invention pipeline that can handle visual scenes. NeSy-$\pi$ invents relational concepts given visual scenes by finding rules defining them using primitive predicates.
+	NeSy-$\pi$ can be integrated with existing NeSy-ILP systems so that they gain rich vocabulary to compose solutions efficiently.
+	%and concatenate it with existing NeSy-ILP system, so that some high level concepts are not necessarily given from reasoning language directly. But they can be invented as needed during training. 
+	%It can improve the system independence on human experts and also improves the generalization of AI models for adapting unseen tasks. 
+	NeSy-$\pi$ reduces the amount of priors to be given by human experts or pre-training of neural modules, and thus extends the applicability of NeSy-ILP systems.
+	NeSy-$\pi$ discovers predicates describing attributes of objects and their spatial relationships in visual scenes.
+	We propose NeSy-$\pi$, a neural-symbolic PI approach, based on \textit{clustering} and \textit{extension} of relational concepts, which is able to reasoning visual scenes without background knowledge. The knowledge can be summarized from scenes. It evaluates the clauses based on its characteristics of necessity and sufficiency. The procedure is repeated iteration by iteration, until the target clauses are found. We tested our approach on both 2D and 3D image patterns.
+	For example, the concepts like left, right, nearby supposed to be invented as new predicates during the training if any of them are needed to represent the target pattern in the positive images.  This map both considers the distance and directions of the latent relation objects. 
+	We designed an evaluation function based on the characteristics of necessity and sufficiency of the clause, which can scoring the searched clauses and keep the promising ones for further extension.
+	%% works of this paper and its contribution
+	%In this paper, we mainly focus on object property and their spatial relationships comparison. In order to using a single language to cover two objects spatial relations as many as possible, we designed an area division map called \textit{target map} as shown in figure \ref{fig:8-area}, they are mapped to neural predicates as consider as basic predicates for PI model. As we shown in the experiment, the concepts like left, right, nearby supposed to be invented as new predicates during the training if any of them are needed to represent the target pattern in the positive images.  This map both considers the distance and directions of the latent relation objects. 
+	
+	%The target clause is searched in a top-bottom way, i.e. we start from most general rules and extend the rules by adding predicates as constraints. The size of searching domain for the target clause is growth exponentially over its length, which make the evaluation very time consuming. Since a naive pruning strategy can eliminate the global optimal clause. 
+	
+	
+	
+	%Comparing to existing approaches, our approach has following contributions
+	Overall, we make the following important contributions:
+	
+	\begin{itemize}
+		%\item We proposed a predicate invention approach for neural-symbolic ILP system.
+		\item We propose NeSy-$\pi$, which is a NeSy predicate invention framework compatible with NeSy ILP systems. NeSy-$\pi$ extends NeSy ILP systems by providing the capability to enrich their vocabularies by learning from data.
+		\item We develop $3$D Kandinsky Patterns, which are user-friendly 3D image-generation systems according to abstract patterns on attributes and relations of objects. It extends Kandisnky patterns to the 3D world, and it achieves faster generation than other environments, \eg CLEVR~\cite{}.
+		% 	\item A formalized way to efficiently evaluate the clauses in visual scenes, which can be further used for pruning strategy.
+		\item Complex shapes \dd{extend}
+		\item We discussed about \textit{when} and \textit{how} to invent new predicates based on \textit{necessary} and \textit{sufficient} judgment factors. \dd{rewrite}
+		% 	\item The provide an implementation of this approach.
+	\end{itemize}
+	%\hk{Contributions are about: What are we providing to the nesy community? What will they gain by our paper?}
+	
+	\section{First-order Logic and Inductive Logic Programming}
+	
+	{\bf First-Order Logic (FOL).}
+	A {\it Language} $\mathcal{L}$ is a tuple $(\mathcal{P}, \mathcal{A}, \mathcal{F}, \mathcal{V})$,
+	where $\mathcal{P}$ is a set of predicates, $\mathcal{A}$ is a set of constants, $\mathcal{F}$ is a set of function symbols (functors), and $\mathcal{V}$ is a set of variables.
+	A {\it term} is a constant, a variable, or a term that consists of a functor.
+	A {\it ground term} is a term with no variables.
+	We denote $n$-ary predicate ${\tt p}$ by ${\tt p}/n$.
+	An {\it atom} is a formula ${\tt p(t_1, \ldots, t_n) }$, where ${\tt p}$ is an $n$-ary predicate symbol and ${\tt t_1, \ldots, t_n}$ are terms.
+	A {\it ground atom} or simply a {\it fact} is an atom with no variables.
+	A {\it literal} is an atom or its negation.
+	A {\it positive literal} is just an atom. 
+	A {\it negative literal} is the negation of an atom.
+	A {\it clause} is a finite disjunction ($\lor$) of literals. 
+	A {\it ground clause} is a clause with no variables.
+	A {\it definite clause} is a clause with exactly one positive literal.
+	If  $A, B_1, \ldots, B_n$ are atoms, then $ A \lor \lnot B_1 \lor \ldots \lor \lnot B_n$ is a definite clause.
+	We write definite clauses in the form of $A~\mbox{:-}~B_1,\ldots,B_n$.
+	Atom $A$ is called the {\it head}, and set of negative atoms $\{B_1, \ldots, B_n\}$ is called the {\it body}.
+	We call definite clauses as clauses for simplicity in this paper.
+	We denote $\mathit{true}$ as $\top$ and $\mathit{false}$ as $\bot$.
+	Substitution $\theta = \{\tt X_1 = t_1, ..., X_n = t_n\}$ is an assignment of term ${\tt t_i}$ to variable ${\tt X_i}$. An application of substitution $\theta$ to atom $A$ is written as $A \theta$. An atom is an atomic \emph{formula}. For formula $F$ and $G$, $\lnot F$, $F \land G$, and $F \lor G$ are also formulas.
+	\emph{Interpretation} of language $\mathcal{L}$ is a tuple $(\mathcal{D}, \mathcal{I}_\mathcal{A}, \mathcal{I}_\mathcal{F}, \mathcal{I}_\mathcal{P})$, 
+	where $\mathcal{D}$ is the  domain, $\mathcal{I}_\mathcal{A}$ is the assignments of an element in $\mathcal{D}$ for each constant ${\tt a} \in \mathcal{A}$,
+	$\mathcal{I}_\mathcal{F}$ is the assignments of a function from $\mathcal{D}^n$ to $\mathcal{D}$ for each $n$-ary function symbol ${\tt f} \in \mathcal{F}$, 
+	and $\mathcal{I}_\mathcal{P}$ is the assignments of a function from $\mathcal{D}^n$ to $\{ \top, \bot \}$ for each $n$-ary predicate ${\tt p} \in \mathcal{P}$.
+	For language $\mathcal{L}$ and formala $X$, an interpretation $\mathcal{I}$ is a \emph{model} if the truth value of $X$ w.r.t $\mathcal{I}$ is true.
+	Formula $X$ is a \emph{logical consequence} or \emph{logical entailment} of a set of formulas $\mathcal{H}$, denoted $\mathcal{H} \models X$, if, $\mathcal{I}$ is a model for $\mathcal{H}$ implies that $\mathcal{I}$ is a model for $X$ for every interpretation $\mathcal{I}$ of $\mathcal{L}$.
+	
+	
+	\textbf{Inductive Logic Programming.}
+	ILP problem $\mathcal{Q}$ is tuple $(\mathcal{E}^+, \mathcal{E}^-, \mathcal{B}, \mathcal{L})$, where
+	$\mathcal{E}^+$ is a set of positive examples, $\mathcal{E}^-$ is a set of negative examples, $\mathcal{B}$ is background knowledge, 
+	and $\mathcal{L}$ is a language. We assume that the examples and the background knowledge are ground atoms.
+	The solution to an ILP problem is a set of definite clauses $\mathcal{H} \subseteq \mathcal{L}$
+	that satisfies the following conditions:
+	\begin{itemize}
+		\item $\forall A \in \mathcal{E}^+ ~ \mathcal{H} \cup \mathcal{B}  \models A$.
+		\item $\forall A \in \mathcal{E}^-  ~\mathcal{H} \cup \mathcal{B} \not \models A.$
+	\end{itemize}
+	Typically the search algorithm starts from general clauses. If the current clauses are too general (strong), i.e., they entail too many negative examples, then the solver incrementally specifies (weakens) them.
+	This weakening operation is called a {\it refinement}, which is one of the essential tools for ILP.
+	
+	
+	\textbf{Ne-Sy Inductive Logic Programming.} We address the ILP problem in visual scenes, which is called \emph{visual ILP problem}, where each example is given as an image containing several objects.
+	The classification pattern is defined on high-level concepts such as attributes and relations of objects.
+	
+	$\alpha$ILP learns differentiable logic programs that describe complex visual scenes.
+	We basically follow the differentiable ILP setting~\cite{Evans2018,Shindo21}, where an ILP problem is formulated as an optimization problem that has the following general form:
+	\begin{align}
+		\min_\mathcal{W} \mathit{loss}(\mathcal{Q}, \mathcal{C}, \mathcal{W}),
+	\end{align}
+	where $\mathcal{Q}$ is an ILP problem, $\mathcal{C}$ is a set of candidates of clauses, $\mathcal{W}$ is a set of weights for clauses, and $\mathit{loss}$ is a loss function that returns a penalty when training constraints are violated.
+	We note that we solve visual ILP problems, where each positive and negative example is an image containing several objects.\hk{continue}
+	
+	
+	$\alpha$ILP~\cite{Shindo2023alphailp} is a NeSy-ILP system which handles complex visual scenes, which learns to represent scenes as logic programs. Intuitively, logical atoms correspond to objects, attributes, and relations, and clauses encode high-level scene information. $\alpha$ILP has an end-to-end reasoning architecture from visual inputs and learns differentiable logic programs by gradient descent.
+	
+	\section{Neuro-Symbolic Predicate Invention: NeSy-$ \pi $}
+	The target of inductive logic programming is to find a target clause $ P $ for the positive patterns $Q$, such that the clause $ P $ describes some logical relations that exist and only exist in the positive patterns. 
+	Thus the target clause $ P $ is sufficient and necessary for the positive patterns $ Q $.
+	\[ P\Leftrightarrow Q \]
+	
+	%%
+	\begin{definition}[PN pair]
+		A pair of positive and negative images.
+	\end{definition}
+	%TODO: tell the way of clause generation
+	We prepare equal number of positive and negative images for evaluation, thus all the images can be paired from two groups.
+	A new generated clause is evaluated on all the PN pairs. Evaluation on each pair getting two values, one from positive and one from negative. 
+	We can take negative value as x axis, positive value as y axis and draw all the evaluation result on a coordinate system. Thus each PN pair corresponds a point. We observed these points are only appears in the four clusters in the coordinate system( as show in figure \ref{fig:pn-pair} middle.), thus we fuzzy these points to only four areas, each take one cluster. Thus for these two values, we only have $ 2^2=4 $ different combinations. We named it as \textit{four score map}.
+	
+	
+	\begin{figure*}[t]
+		\centering
+		\begin{minipage}{\textwidth}
+			\includegraphics[width=\linewidth]{img/four_zone_explain.png} 
+			\caption{\textbf{Left}: PN pairs. \textbf{Middle}: PN pair scores on coordinate system. The points are clustered in four corners. These scores are evaluated by NSFR. \textbf{Right:}Four Score Map. The four score map illustrates the result of 4 kinds of evaluation on one clause, i.e. high positive-high negative, high positive-low negative, low positive-high negative, low positive-low negative. }
+			\label{fig:pn-pair}
+		\end{minipage}
+	\end{figure*}
+	
+	
+	A \textbf{four score map} fuzzy the evaluation result on an image to positive 1 and negative 0, map the positive image result and negative image result to four areas, namely $ (0,0), (0,1), (1,0) $ and $ (1,1) $. We found that four score map has good description for sufficient and necessary conditions in logic.
+	
+	Base on the scoring areas of the predicates, we can classify them into several groups. Let $ N $ denotes the number of PN pairs.
+	
+	\begin{definition}[Sufficient and Necessary Clause]
+		Scores on $ (0,1) $ only, i.e. $ s_{01} =N$ They are sufficient and necessary for the target pattern.
+	\end{definition}
+	
+	\begin{definition}[Necessary Clause]
+		Scores on $ (0,1) $ and $ (1,1) $, i.e. $ s_{01} + s_{11} = N $. They are necessary for the target pattern. Note that they always true in the positive images, but also can be true in negative images.
+	\end{definition}
+	
+	\begin{definition}[Sufficient Clause]
+		Scores on $ (0,0) $ and $ (0,1) $, $ s_{00}+s_{01} = N $ and $ s_{01}>0 $. It induces directly some of positive patterns but can be failed on some other positive patterns. It never induces any negative patterns.
+	\end{definition}
+	
+	The key idea of these definitions is to provide an evaluation metric for searched clauses. Since it is impossible to consider all the clauses for rule searching, an efficient pruning strategy is necessary. Our pruning strategy is mainly based on the satisfaction of the clauses on these definitions. 
+	
+	
+	\begin{figure*}[t]
+		\centering
+		\includegraphics[width=0.8\textwidth]{scripts/fsm.tikz}
+		\caption{The workflow of NeSy-$ \pi $. Edge $ a $ fires when maximum extension time is not exceed or no new predicates are invented after clustering. Edge $ b $ fires when maximum extension times is exceed. Edge $ c $ fires when new predicates are kept after pruning.}
+		\label{fig:nesy-pi-workflow.}
+	\end{figure*}
+	
+	The workflow of NeSy-$ \pi $ is shown in figure \ref{fig:nesy-pi-workflow.}. The system's work is basically to maintain a clause set $ \mathcal{C} $. We add promising clauses inside and remove the abandoned ones from it. We explain each state as follows
+	\paragraph{Initial}
+	The searching is started from here. The input is the most general clause, i.e. the one that only states the existence of objects in the scene. For a scene with at most 2 objects, the initial clause set is $ \mathcal{C} = \{\mathtt{target(X):-in(O1,X),in(O2,X).} \} $. Note that initial clause is a necessary clause since it is true on all the positive images.
+	
+	\paragraph{Extend}
+	The input is either the initial clause set or the clauses set from pruning. For each clause in the set, we extend it with one predicate. Since there are many possible predicates to chose, any of them can be a promising one, thus we consider all the extension possibility into account. For example, to extend clause $ c $, if there are 10 predicates in the language, the number of extended clauses of $ c $ is up to 10, if all the extended clauses are consistent with itself.
+	
+	\paragraph{Evaluate}
+	In order to find all the promising clauses, we evaluate all the extended new clauses or clustered clauses. For each evaluation unit, we evaluate it on the whole dataset and classify it based on its four score map.
+	
+	\paragraph{Pruning}
+	Pruning is based on scores of each clause or clause cluster getting from evaluate state. A prune strategy is required in this step. In this paper, we select only top ranked necessary/sufficient clauses/clusters, the rests are pruned. 
+	
+	\paragraph{Cluster}
+	The cluster is one step as preparation of high level concepts invention. 
+	For example, if $ \mathtt{blue}, \mathtt{red} $  are the only appearing colors in all the scenes,  the concept $ \mathtt{two\_objs\_with\_same\_color} $ can be clustered by clauses 
+	\begin{align*}
+		\mathtt{two\_objs\_with\_same\_color(X)}&\mathtt{\texttt{:-}in(O1,X),in(O2,X),color(O1,Blue),color(O2,blue).}\\ \mathtt{two\_objs\_with\_same\_color(X)}&\mathtt{\texttt{:-}in(O1,X),in(O2,X),color(O1,Red),color(O2,red).}
+	\end{align*}
+	After pruning, if the max iteration of clause extension is exceed, the system will cluster the clauses. The input is clause set $ \mathcal{C} $. 
+	We calculate all the subsets of $ \mathcal{C} $. Each subset is considered as one cluster. The number of clusters is up to $ 2^n $, where $ n=|\mathcal{C}| $ i.e. the size of clause set. Since it grows exponentially, for a large $ n $, we cannot evaluate all the subset. In order to improve the computation efficiency, the size of subset can be constrained with a threshold, to control the maximum size of the subset.
+	
+	\paragraph{Inventing}
+	The input of inventing state is the set of clause clusters. Each cluster is considered as a new predicate, where its body is the clause clusters. After invention, the new predicates update the language and the system goes to initial state again.
+	
+	\paragraph{Finish} 
+	The system finish the rule searching if any sufficient and necessary predicate or clause is found or failed by exceeding the maximum iterations.
+	
+	
+	
+	\section{Experimental Evaluation}
+	% \hk{List questions to be answered?} \dd{Yep}
+	We aim to answer the following questions:
+	\begin{enumerate}
+		\item[\textbf{Q1:}] Does NeSy-$\pi$ invent predicates from complex visual scenes for NeSy ILP systems to reduce required background knowledge?
+		\item[\textbf{Q2:}] Is NeSy-$\pi$ computationally efficient?
+		\item[\textbf{Q3:}] Can 3D Kandinsky patterns provide efficient evaluations for NeSy-ILP systems?
+	\end{enumerate}
+	To solve 2D Kandinsky Patterns, we provide following constants as background knowledge, 
+	shape: $\mathtt{square/triangle/circle}$; 
+	color: $\mathtt{red/yellow/blue}$; 
+	distance: from 0 to the maximum distance (the image width), we divide it to 8 levels, denote by $\mathtt{\rho_1/.../\rho_8}$, where $\rho_1 $ denote the distance within 0 pixel, $\rho_8$ corresponds the distance equal to the width of the image, others denote something in between; 
+	direction: similar to distance, the direction is represented by 8 predicates $\phi_1/.../\phi_8 $ where each one corresponds $360/8=45^\circ$ of direction. \hk{We need a visual explanation for this}
+	No further information is given, such as different color, different shape, etc. Fig. \ref{fig:kandinsky-patterns} shows some of the patterns in 2DKP. 
+	
+	To solve 3D Kandinsky Patterns, we provide following constants as background knowledge, 
+	shape: $\mathtt{sphere/cube}$; 
+	color: $\mathtt{pink/green/blue}$; 
+	distance: all the positions of 3D objects are normalized. 8 distance predicates  are used to represent 8 levels of distance evenly;
+	direction: we assume all the object place on a flat surface with similar height, thus the direction between two objects can be represented by two values only. We divide the direction into 8 levels evenly where each one corresponds $45^\circ$ of directions.
+	\ref{fig:kandinsky-patterns} shows some of the patterns in 3DKP.
+	The learning result on each patterns in Kandinsky pattern is shown in table \ref{tab:pi-result}.
+	Fig.~\ref{fig:rules_cross_3DKP} shows the learned clause and invented predicates of \textit{cross} pattern in 3DKP.
+	
+	\begin{figure}[t]%[!htb]
+		\centering
+		\subfigure[Two Pairs]{\includegraphics[width=0.24\textwidth]{img/kp/twopairs.png}} 
+		\subfigure[Red Triangle]{\includegraphics[width=0.24\textwidth]{img/kp/red_triangle.png}} 
+		\subfigure[Check Mark]{\includegraphics[width=0.24\textwidth]{img/kp/check_mark_en.png}} 
+		\subfigure[Cross]{\includegraphics[width=0.24\textwidth]{img/kp/check_mark_de.png}} 
+		\caption{Kandinsky Patterns. \textbf{Two Pairs}: This pattern always have 4 objects inside, two of them has same color and same shape, the other two has same shape and different color. \textbf{Red Triangle}: This pattern always have a red triangle, and another object with different color and different shape nearby, the rest 4 objects are random objects. \textbf{Check Mark}: the positions of 5 objects consists of an outline of check mark. \textbf{Cross}: the position of 5 objects consists of an outline of a cross mark.}
+		\label{fig:kandinsky-patterns}
+	\end{figure}
+	
+	
+	\begin{figure}[!htb]
+		\centering
+		\subfigure[Three Same]{\includegraphics[width=0.24\textwidth]{img/3DKP/3_same.png}} 
+		\subfigure[Two Pairs]{\includegraphics[width=0.24\textwidth]{img/3DKP/two_pairs.png}} 
+		\subfigure[Cross]{\includegraphics[width=0.24\textwidth]{img/3DKP/cross_same_shape.png}} 
+		\subfigure[Check Mark]{\includegraphics[width=0.24\textwidth]{img/3DKP/check_mark.png}} 
+		\caption{3D Kandinsky Patterns. 
+			\textbf{Three Same}: This pattern always have 3 objects inside, three of them has same color and same shape. 
+			\textbf{Two Pairs}: This pattern always have 4 objects inside, two of them has same color and same shape. The other two also have same color and same shape.
+			\textbf{Cross Mark}: this pattern always have 5 objects with same shape inside, the positions of 5 objects consists of an outline of cross mark.
+			\textbf{Check Mark}: this pattern always have 5 objects, the position of 5 objects consists of an outline of a check mark.}
+		\label{fig:3DKP-patterns}
+	\end{figure}
+	
+	
+	
+	%\begin{lstlisting}[language=Prolog, mathescape]
+	\begin{figure}[t]
+		\centering
+		\begin{lstlisting}[language=Prolog,  style=Prolog-pygsty]
+target(X):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),in(O5,X),
+inv_pred15(O1,O2,O3,O4,O5).
 
+inv_pred15(O1,O2,O3,O4,O5):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),in(O5,X),
+inv_pred6(O2,O3,O4,O5),shape(O1,cube),shape(O2,cube),shape(O3,cube).
 
+inv_pred15(O1,O2,O3,O4,O5):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),in(O5,X),
+inv_pred6(O2,O3,O4,O5),shape(O1,sphere),shape(O2,sphere),shape(O3,sphere).
 
-
-
-\section{Background and Related Work}
-
-Although predicate invention has been proposed since 1988 by \cite{MUGGLETON1988339}, it is always be considered as a major challenge. Most ILP system do not supports PI, including classic systems like Progol \cite{Muggleton1995InverseEA}, TILDE\cite{BLOCKEEL1998285} and modern system such as ATOM \cite{atom}, LFIT \cite{LFIT}.
-
-Some works have been proposed for PI systems. However, none of these are focus on visual images and learning logical patterns existing in the visual scenes. 
-\cite{pilff} is an approach for predicate invention, which generate constrains from inconsistent hypothesis and further be used for pruning all the similar clauses. \cite{gtnpi} use negation with PI to generalize the clause, which follows a bottom-top direction 
-Several system uses \cite{Evans2018}, \cite{kaminski_eiter_inoue_2018} meta-rules as templates for new predicates invention. 
-
-$ \alpha $ILP (citation?) supports visual image as input but require background knowledge during the reasoning.
-
-
- 
- 
-
-\section{Target Map}
-
-
-
-
-
-Collect the facts from group of visual scenes and induce the common properties from the facts are 
-can answer the question, why they are in the same group. However, common properties sometimes can be not obviously and hard to be described.
-and using a single word  to summarize it to a suitable new concept is one of powerful ability of human-being. It simplifies the description of complex 
-Predicate invention is an essential ability for ILP system to reasoning about 
-
-
-
-\begin{figure*}[h]
-	\centering
-	\begin{minipage}{\textwidth}
-		\includegraphics[width=\linewidth]{img/intro_compare.png} 
-		\caption{Predicate invention workflow.}
-		\label{fig:Pipeline comparison between neural symbolic-ILP system without PI module and with PI module.}
-	\end{minipage}
-\end{figure*}
-
-
-\begin{figure*}[h]
-	\centering
-	\begin{minipage}{\textwidth}
-		\includegraphics[width=\linewidth]{img/pi_structure.png} 
-		\caption{Predicate invention workflow.}
-		\label{fig:pi-structure}
-	\end{minipage}
-\end{figure*}
-
-The goal of our work is to find a predicate invention pipeline so that some high level concepts are not necessarily given from reasoning language directly. But they can be invented as needed during training. The invention is important since it is a way to acquire new knowledge and shows the ability of intelligence. On the other hand, it improves the generalization of AI models for adapting unseen tasks. The invention model improves the system to describe the problem more accurate.
-
-%TODO: rewrite...
-However, the invention is still based on given background knowledge. It has to be simple, combinable,  and mutually compatible, so that the new concepts are various and accurate.
-
-In order to using a single language to cover two objects spatial relations as many as possible, we designed an area division map called \textit{target map}. As shown in figure \ref{fig:8-area}, the surrounding area according to the reference object has been divided into 8 sub-areas. 
-The areas in the target map are considered as background knowledge. The concepts like left, right, nearby supposed to be invented as new predicates during the training if any of them are needed to represent the target pattern in the positive images.  This map both considers the distance and directions of the latent relation objects. 
-Using the target map, multiple real-world related spatial concepts can be represented by combining some of atom areas, such as 
-\textit{left} (combining area 2,3,6,7), 
-\textit{right}(combining area 0,1,4,5), 
-\textit{nearby}(combining area 0,1,2,3) and so on. 
-
-\newpage
-
-\section{NeSy-ILP}
-
-
-\section{NeSy-$ \pi $}
-
-The target of inductive logic programming is to find a target clause $ P $ for the positive patterns $ Q $ , such that the clause $ P $ describes some logical relations that exist and only exist in the positive patterns. 
-Thus the target clause $ P $ is sufficient and necessary for the positive patterns $ Q $.
-\[ P\Leftrightarrow Q \]
-
-
-\begin{definition}[PN pair]
-	A pair of positive and negative images.
-\end{definition}
-%TODO: tell the way of clause generation
-We prepare equal number of positive and negative images for evaluation, thus all the images can be paired from two groups.
-A new generated clause is evaluated on all the PN pairs. Evaluation on each pair getting two values, one from positive and one from negative. 
- We can take negative value as x axis, positive value as y axis and draw all the evaluation result on a coordinate system. Thus each PN pair corresponds a point. We observed these points are only appears in the four clusters in the coordinate system( as show in figure \ref{fig:pn-pair} middle.), thus we fuzzy these points to only four areas (we use $ f(P) $ to represent this step, where $ P $ is the points on the whole dataset.), each take one cluster. Thus for these two values, we only have $ 2^2=4 $ different combinations. We named it as \textit{four score map}.  
- 
- \begin{figure*}[h]
- 	\centering
- 	\begin{minipage}{\textwidth}
- 		\includegraphics[width=\linewidth]{img/four_zone_explain.png} 
- 		\caption{\textbf{Left}: PN pairs. \textbf{Middle}: PN pair scores on coordinate system. The points are clustered in four corners. These scores are evaluated by NSFR. \textbf{Right:}Four Score Map. The four score map illustrates the result of 4 kinds of evaluation on one clause, i.e. high positive-high negative, high positive-low negative, low positive-high negative, low positive-low negative. }
- 		\label{fig:pn-pair}
- 	\end{minipage}
- \end{figure*}
- 
- A \textbf{four score map} fuzzy the evaluation result on an image to positive 1 and negative 0, map the positive image result and negative image result to four areas, namely $ (0,0), (0,1), (1,0) $ and $ (1,1) $. We found that four score map has good description for sufficient and necessary conditions in logic.
-
-Base on the scoring areas of the predicates, we can classify them into several groups. Let $ N $ denotes the number of PN pairs.
-
-\begin{definition}[Sufficient and Necessary Clause]
-	Scores on $ (0,1) $ only, i.e. $ s_{01} =N$ They are sufficient and necessary for the target pattern.
-\end{definition}
-
-\begin{definition}[Necessary Clause]
-	Scores on $ (0,1) $ and $ (1,1) $, i.e. $ s_{01} + s_{11} = N $. They are necessary for the target pattern. Note that they always true in the positive images, but also can be true in negative images.
-\end{definition}
-
-\begin{definition}[Sufficient Clause]
-	Scores on $ (0,0) $ and $ (0,1) $, $ s_{00}+s_{01} = N $ and $ s_{01}>0 $. It induces directly some of positive patterns but can be failed on some other positive patterns. It never induces any negative patterns.
-\end{definition}
-
-
-The key idea of these definitions is to provide an evaluation metric for searched clauses. Since it is impossible to consider all the clauses for rule searching, an efficient pruning strategy is necessary. Our pruning strategy is mainly based on the satisfaction of the clauses on these definitions. 
-
-\begin{figure*}[h]
-	\centering
-	\includegraphics[width=0.8\textwidth]{scripts/fsm.tikz}
-	\caption{The workflow of NeSy-$ \pi $. Edge $ a $ fires when maximum extension time is not exceed or no new predicates are invented after clustering. Edge $ b $ fires when maximum extension times is exceed. Edge $ c $ fires when new predicates are kept after pruning.}
-	\label{fig:nesy-pi-workflow.}
-\end{figure*}
-
-The workflow of NeSy-$ \pi $ is shown in figure \ref{fig:nesy-pi-workflow.}. The system's work is basically to maintain a clause set $ \mathcal{C} $. We add promising clauses inside and remove the abandoned ones from it. We explain each state as follows
-\paragraph{Initial}
-The searching is started from here. The input is the most general clause, i.e. the one that only states the existence of objects in the scene. For a scene with at most 2 objects, the initial clause set is $ \mathcal{C} = \{\mathtt{target(X):-in(O1,X),in(O2,X).} \} $. Note that initial clause is a necessary clause since it is true on all the positive images.
-
-\paragraph{Extend}
-The input is either the initial clause set or the clauses set from pruning. For each clause in the set, we extend it with one predicate. Since there are many possible predicates to chose, any of them can be a promising one, thus we consider all the extension possibility into account. For example, to extend clause $ c $, if there are 10 predicates in the language, the number of extended clauses of $ c $ is up to 10, if all the extended clauses are consistent with itself.
-
-\paragraph{Evaluate}
-In order to find all the promising clauses, we evaluate all the extended new clauses or clustered clauses. For each evaluation unit, we evaluate it on the whole dataset and classify it based on its four score map.
-
-\paragraph{Pruning}
-Pruning is based on scores of each clause or clause cluster getting from evaluate state. A prune strategy is required in this step. In this paper, we select only top ranked necessary/sufficient clauses/clusters, the rests are pruned. 
-
-\paragraph{Cluster}
-The cluster is one step as preparation of high level concepts invention. 
-For example, if $ \mathtt{Blue}, \mathtt{Red} $ are the only appearing colors in all the scenes,  the concept $ \mathtt{two\_objs\_with\_same\_color} $ can be clustered by clauses 
-\begin{align*}
-	\mathtt{two\_objs\_with\_same\_color(X)}&\mathtt{:-in(O1,X),in(O2,X),color(O1,Blue),color(O2,Blue).}\\ \mathtt{two\_objs\_with\_same\_color(X)}&:\mathtt{-in(O1,X),in(O2,X),color(O1,Red),color(O2,Red).}
-\end{align*}
-After pruning, if the max iteration of clause extension is exceed, the system will cluster the clauses. The input is clause set $ \mathcal{C} $. 
-We calculate all the subsets of $ \mathcal{C} $. Each subset is considered as one cluster. The number of clusters is up to $ 2^n $, where $ n=|\mathcal{C}| $ i.e. the size of clause set. Since it grows exponentially, for a large $ n $, we cannot evaluate all the subset. In order to improve the computation efficiency, the size of subset can be constrained with a threshold, to control the maximum size of the subset.
-
-\paragraph{Inventing}
-The input of inventing state is the set of clause clusters. Each cluster is considered as a new predicate, where its body is the clause clusters. After invention, the new predicates update the language and the system goes to initial state again.
-
-\paragraph{Finish} 
-The system finish the rule searching if any sufficient and necessary predicate or clause is found or failed by exceeding the maximum iterations.
-
-
-
-
-\section{Experiments}
-To solve Kandinsky patterns, we provide following constants as background knowledge, 
-shape: circle, square, triangle; color: red, yellow, blue; group\_shape: line, unknown; distance: every 25 pixels as one unit. Besides, no further information is given, such as different color, different shape, etc. Some of the tested patterns are shown in figure \ref{fig:kandinsky-patterns}.
-
-\begin{figure}[!htb]
-	\centering
-	\subfigure[Two Pairs]{\includegraphics[width=0.24\textwidth]{img/kp/twopairs.png}} 
-	\subfigure[Red Triangle]{\includegraphics[width=0.24\textwidth]{img/kp/red_triangle.png}} 
-	\subfigure[Check Mark]{\includegraphics[width=0.24\textwidth]{img/kp/check_mark_en.png}} 
-	\subfigure[Cross]{\includegraphics[width=0.24\textwidth]{img/kp/check_mark_de.png}} 
-	\caption{Kandinsky Patterns. \textbf{Two Pairs}: This pattern always have 4 objects inside, two of them has same color and same shape, the other two has same shape and different color. \textbf{Red Triangle}: This pattern always have a red triangle, and another object with different color and different shape nearby, the rest 4 objects are random objects. \textbf{Check Mark}: the positions of 5 objects consists of an outline of check mark. \textbf{Cross}: the position of 5 objects consists of an outline of a cross mark.}
-	\label{fig:kandinsky-patterns}
-\end{figure}
-
-
-
-\begin{figure}[!htb]
-	\centering
-	\subfigure[Three Same]{\includegraphics[width=0.24\textwidth]{img/3DKP/3_same.png}} 
-	\subfigure[Triangle Same]{\includegraphics[width=0.24\textwidth]{img/3DKP/two_pairs.png}} 
-	\subfigure[Cross]{\includegraphics[width=0.24\textwidth]{img/3DKP/cross_same_shape.png}} 
-	\subfigure[Check Mark]{\includegraphics[width=0.24\textwidth]{img/3DKP/check_mark.png}} 
-	\caption{3D Kandinsky Patterns. \textbf{Three Same}: This pattern always have 3 objects inside, three of them has same color and same shape. \textbf{Triangle Same}: This pattern always have 3 objects inside, three of them has same color and same shape. Besides, three objects form a triangle shape. \textbf{Cross}: this pattern always have 5 objects with same shape inside, the positions of 5 objects consists of an outline of cross mark. \textbf{Check Mark}: this pattern always have 5 objects with same color inside, the position of 5 objects consists of an outline of a cross mark.}
-	\label{fig:3DKP-patterns}
-\end{figure}
-
-Learning result of red-triangle pattern is shown as follows:
-
-%\begin{lstlisting}[language=Prolog, mathescape]
-\begin{figure}[t]
-	\centering
-	\begin{lstlisting}[language=Prolog,  style=Prolog-pygsty]
-
-(three same)
-kp(X):-in(O1,X),in(O2,X),in(O3,X),inv_pred2(O1,O2,O3).
-inv_pred2(O1,O2,O3):-color(O1,blue),color(O2,blue),color(O3,blue),
-	in(O1,X),in(O2,X),in(O3,X),shape(O1,cube),shape(O2,cube),shape(O3,cube).
-inv_pred2(O1,O2,O3):-color(O1,blue),color(O2,blue),color(O3,blue),in(O1,X),
-	in(O2,X),in(O3,X),shape(O1,sphere),shape(O2,sphere),shape(O3,sphere).
-inv_pred2(O1,O2,O3):-color(O1,green),color(O2,green),color(O3,green),in(O1,X),
-	in(O2,X),in(O3,X),shape(O1,cube),shape(O2,cube),shape(O3,cube).
-inv_pred2(O1,O2,O3):-color(O1,green),color(O2,green),color(O3,green),in(O1,X),
-	in(O2,X),in(O3,X),shape(O1,sphere),shape(O2,sphere),shape(O3,sphere).
-inv_pred2(O1,O2,O3):-color(O1,pink),color(O2,pink),color(O3,pink),in(O1,X),
-	in(O2,X),in(O3,X),shape(O1,cube),shape(O2,cube),shape(O3,cube).
-inv_pred2(O1,O2,O3):-color(O1,pink),color(O2,pink),color(O3,pink),in(O1,X),
-	in(O2,X),in(O3,X),shape(O1,sphere),shape(O2,sphere),shape(O3,sphere).
-
-
-(two pairs)
-kp(X):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),inv_pred30(O1,O2,O3,O4),
-	inv_pred7(O3,O4).
-inv_pred30(O1,O2,O3,O4):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),inv_pred2(O1,O2),
-	inv_pred2(O3,O4),inv_pred7(O1,O2).
-inv_pred7(O1,O2):-in(O1,X),in(O2,X),shape(O1,cube),shape(O2,cube).
-inv_pred7(O1,O2):-in(O1,X),in(O2,X),shape(O1,sphere),shape(O2,sphere).
-inv_pred2(O1,O2):-color(O1,blue),color(O2,blue),in(O1,X),in(O2,X).
-inv_pred2(O1,O2):-color(O1,green),color(O2,green),in(O1,X),in(O2,X).
-inv_pred2(O1,O2):-color(O1,pink),color(O2,pink),in(O1,X),in(O2,X).
-
-(cross mark)
-kp(X):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),in(O5,X),inv_pred15(O1,O2,O3,O4,O5).
-inv_pred3(O2,O3,O4,O5):-in(O2,X),in(O3,X),in(O4,X),in(O5,X),rho(O2,O5,rho2),
-	rho(O3,O4,rho2).
 inv_pred6(O1,O3,O4,O5):-in(O1,X),in(O3,X),in(O4,X),in(O5,X),
-	inv_pred3(O1,O3,O4,O5),phi(O3,O5,phi6),rho(O3,O5,rho1).
-inv_pred15(O1,O2,O3,O4,O5):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),in(O5,X),
-	inv_pred6(O2,O3,O4,O5),shape(O1,cube),shape(O2,cube),shape(O3,cube).
-inv_pred15(O1,O2,O3,O4,O5):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),in(O5,X),
-	inv_pred6(O2,O3,O4,O5),shape(O1,sphere),shape(O2,sphere),shape(O3,sphere).
+inv_pred3(O1,O3,O4,O5),phi(O3,O5,phi6),rho(O3,O5,rho1).
 
-(check mark)
-kp(X):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),in(O5,X),inv_pred3(O1,O2,O3,O5),
-	inv_pred4(O2,O4,O5).
-inv_pred3(O1,O2,O3,O5):-in(O1,X),in(O2,X),in(O3,X),in(O5,X),rho(O1,O2,rho0),
-	rho(O3,O5,rho0).
-inv_pred4(O1,O2,O5):-in(O1,X),in(O2,X),in(O5,X),rho(O1,O2,rho0),rho(O1,O5,rho0).
-	\end{lstlisting}
-	\label{fig:rules_cross_3DKP}
-	\caption{Learned rules by NeSy-$\pi$ on 3D Kandinsky Pattern scenes.}
-\end{figure}
-
-The learning details on each patterns in Kandinsky pattern and 3D Scenes is shown in table \ref{tab:pi-result}. 
-\begin{table}
-	\centering
-	\caption{PI requirement and result on each patterns, where Ne-Preds means neural predicates.}
-	\label{tab:pi-result}
-	\begin{tabular}{c|c|c|c|c|c|c|c|c}
-		\hline
-		\toprule
-		\multirow{2}*{Dataset} & \multirow{2}*{Patterns} &  \multirow{2}*{Iterations} &\multicolumn{2}{c|}{Times} & \multicolumn{2}{c|}{Accuracy} & \multicolumn{2}{c}{\# of Ne-Preds} \\
-		\cline{4-9}
-		 & & & $ \alpha$ILP & NeSy-$ \pi $ &$ \alpha$ILP & NeSy-$ \pi $&$ \alpha$ILP & NeSy-$ \pi $\\
-		\hline
-		\multirow{4}*{Kandinsky} &
-		red-triangle &	3  & 0 	    & & & & 	0	    &  4           \\
-		&two-pairs   & 	2	& 	0 	& & & & 0	& 3	        \\
-		&check-mark &		& 	0 	& & & & 0	&  	     \\
-		&cross-mark &		& 	0 	& & & & 0	&  	       \\
-		\hline
-		\multirow{4}*{3D Scenes} &
-		three same & 2  & 0 	    & & &  & 	0	    &       1      \\
-		&two-pairs  & 2		& 	0 	& & & & 0	& 	3        \\
-		&cross mark  & 	2	& 	0 	& & & & 0	& 	   3     \\
-		&check mark  & 	1	& 	0 	& & & & 0	& 	     2   \\
-		\bottomrule
-	\end{tabular}
-\end{table}
-
-
-
-\section{Conclusion}
-
-In this paper, we proposed an approach for Neural-Symbolic Predicate Invention. NeSy-PI is able to find the new knowledge and summarize it as new predicates, thus it requires less background knowledge for reasoning.
-In our experiment, we show that our PI model can successfully find the target program given only basic neural perception results and relevant constants, no further background knowledge is required. We also show our efficient prune strategy for predicate searching, the searching result is acquired faster and still sound.
-
-
-
-\newpage
-To solve the nearby pattern, we invent the concept $ inv\_pred\_1O\_1, O\_2 $ by cluster clauses, which actually represent the concept \textit{nearby}. It is necessary for the target patterns since it is true in all the positive images. It is also directly a sufficient predicate since no negative image has this pattern. The target clauses can be described as follows:
-\begin{align*}
-	target(X) :- & in(O_1,X),in(O_2,X), inv\_pred\_1(O_1,O_2).\\
-	inv\_pred\_1(O_1, O_2) :- 	& in(O_1,X), in(O_2,X), a\_0(O_1,O_2).\\
-	inv\_pred\_1(O_1, O_2) :- 	& in(O_1,X), in(O_2,X), a\_1(O_1,O_2).\\									
-\end{align*}
-
-\subsubsection{Red Triangle}
-To solve the red triangle pattern, we require the concept \textit{nearby} first by cluster clauses. It is necessary for the target patterns but not yet sufficient. Then we use beam search to extend this necessary clause with adding predicates, a sufficient and necessary clause is generated in several steps.
-\begin{align*}
-	target(X) :- & in(O_1,X),in(O_2,X), inv\_pred\_1(O_1,O_2), \\
-						& shape(O_1, triangle), color(O_1, red), \\
-						& diff\_shape\_pair(O_1,O_2), diff\_color\_pair(O_1,O_2)\\
-	\\
-	inv\_pred\_1(O_1, O_2) :- 	& in(O_1,X), in(O_2,X), a\_0(O_1,O_2).\\
-	inv\_pred\_1(O_1, O_2) :- 	& in(O_1,X), in(O_2,X), a\_1(O_1,O_2).\\		
-	inv\_pred\_1(O_1, O_2) :- 	& in(O_1,X), in(O_2,X), a\_2(O_1,O_2).\\																
-	inv\_pred\_1(O_1, O_2) :- 	& in(O_1,X), in(O_2,X), a\_3(O_1,O_2).\\									
-\end{align*}
-
-\subsubsection{Online-Pair}
-For online-pair patterns, five objects are align on a line, whereas two of them have the same color and same pair. 
-In this pattern, no necessary clauses can be found  by clustering predicates. Thus we have to extend the clauses using beam search, until it is sufficient. Then for the sufficient clauses that we have found, we perform clustering for necessity.
-
-A possible target clauses searching by predicate invention system is shown as follows
-\begin{align*}
-	target(X) :- & in(O_1,X),in(O_2,X),in(O_3,X),in(O_4,X),in(O_5,X) \\
-						& inv\_pred\_1(O_1,O_2,O_3,O_4,O_5)\\
-			 			\\
-		inv\_pred\_1(O_1,O_2,O_3,O_4,O_5) :- 	& in(O_1,X),in(O_2,X),in(O_3,X),in(O_4,X),in(O_5,X) \\
-																				& a\_0(O_4,O_1),a\_2(O_2,O_1), same\_shape\_pair(O_2,O_4)\\
-	inv\_pred\_1(O_1,O_2,O_3,O_4,O_5) :- 	& in(O_1,X),in(O_2,X),in(O_3,X),in(O_4,X),in(O_5,X) \\
-																			& a\_2(O_2,O_5),a\_2(O_5,O_3),color(O_3, blue)\\
-	inv\_pred\_1(O_1,O_2,O_3,O_4,O_5) :- 	& in(O_1,X),in(O_2,X),in(O_3,X),in(O_4,X),in(O_5,X) \\
-																			& a\_3(O_2,O_1),a\_3(O_4,O_2),a\_3(O_5,O_4)\\
-																			\\
-	inv\_pred\_2(O_1,O_2,O_3,O_4,O_5) :- 	& in(O_1,X),in(O_2,X),in(O_3,X),in(O_4,X),in(O_5,X) \\
-																			& a\_0(O_4,O_1),a\_2(O_2,O_1),same\_shape\_pair(O_2,O_4)\\
-	inv\_pred\_2(O_1,O_2,O_3,O_4,O_5) :- 	& in(O_1,X),in(O_2,X),in(O_3,X),in(O_4,X),in(O_5,X) \\
-																			& a\_1(O_3,O_1),a\_3(O_2,O_4),same\_color\_pair(O_2,O_4)\\																			
-	inv\_pred\_2(O_1,O_2,O_3,O_4,O_5) :- 	& in(O_1,X),in(O_2,X),in(O_3,X),in(O_4,X),in(O_5,X) \\
-																			& a\_2(O_2,O_5),a\_2(O_5,O_3),color(O\_3, blue)\\
-	inv\_pred\_2(O_1,O_2,O_3,O_4,O_5) :- 	& in(O_1,X),in(O_2,X),in(O_3,X),in(O_4,X),in(O_5,X) \\
-																			& a\_3(O_2,O_1),a\_3(O_4,O_2),a\_3(O_5,O_4)\\																			
-\end{align*}
-
-Note that the predicate $ inv\_pred\_1(O_1,O_2,O_3,O_4,O_5) $ share the same bodies $ same\_shape\_pair(O_1,O_2), same\_color\_pair(O_1,O_2) $, which corresponds the concept $ five\_object\_on\_the\_same\_line\_with\_one\_pair\_of\_same\_color\_and\_shape\_objects $. We can remove shared bodies in the clause definition. Then the predicate corresponds a simpler concept $ five\_object\_on\_the\_same\_line $, which is a necessary predicate. It becomes sufficient after adding the deleted predicate back to. Removing shared bodies is not necessary but it can simplify the corresponding concepts of invented predicates. 
- 
-
-\begin{figure}[!htb]
-	\centering
-	\subfigure[Triangle]{\includegraphics[width=0.24\textwidth]{img/hide/triangle_3.png}} 
-	\subfigure[Vertical Line]{\includegraphics[width=0.24\textwidth]{img/hide/three_green_line.png}} 
-	\subfigure[Pentagon]{\includegraphics[width=0.24\textwidth]{img/hide/pentagon.png}}
+inv_pred3(O2,O3,O4,O5):-in(O2,X),in(O3,X),in(O4,X),in(O5,X), rho(O2,O5,rho2),
+rho(O3,O4,rho2).
+		\end{lstlisting}
+		\label{fig:rules_cross_3DKP}
+		\caption{Learned rules by NeSy-$\pi$ on Cross pattern in 3D Kandinsky Pattern scenes.}
+	\end{figure}
 	
-	\subfigure[Triangle]{\includegraphics[width=0.24\textwidth]{img/hide/triangle_3_neg.png}} 
-	\subfigure[Vertical Line]{\includegraphics[width=0.24\textwidth]{img/hide/three_green_line_neg.png}} 
-	\subfigure[Pentagon]{\includegraphics[width=0.24\textwidth]{img/hide/pentagon_neg.png}}
-	\caption{Hide Patterns.}
-	\label{fig:hide-patterns}
-\end{figure}
-
-
-
-\textbf{Necessary Condition}: % Invented predicates, on the contrary to the target predicate, should be \textit{necessary} for positive patterns. 
-Necessary conditions can be entailed by all positive patterns. They can be insufficient, thus they can also be entailed by negative patterns. Necessary predicates are invented as prerequisite for sufficient predicate invention.
-The necessity guarantees the searching for invented predicates is controlled in a proper scale, since only limited necessary conditions exist in the positive patterns. 
-If we loose the necessity assumption, the searching domain for invented predicates can be huge since the conditions that doesn't exist in the positive patterns are irregular and  countless. 
-In order to satisfy the necessary condition, we can \textbf{cluster} independent clauses. Independent means the clauses do not share same predicates. It usually leads to invent high level concepts. For example, cluster low level concept \textit{south}, \textit{east}, \textit{north}, \textit{west}, those are independent concept with each other, we can have a high level concept \textit{directions}. In this case, we need a new predicate to represent the cluster. Therefore the predicates are invented by necessary condition satisfied.
-
-
-
-Think about "How" to cluster the existing clauses. Simply cluster all the clauses as one single concept cannot handle complicate rules.
-
-If NSFR gives following clauses, then which of those clauses should be clustered as the new concept?
-
-If there is a pattern with multiple rules,
-a iteration-based approach should be proposed.
-First several iteration, it should be able to learn some new predicates, then use new predicates to describe the new scenarios.
-
-New predicate has to be able to 100\% describe the positive images. Otherwise, reconsider it.
-
-\begin{align*}
-	target(X,Y) &\leftarrow atArea0(X,Y), atArea2(Y,X)  \\
-	target(X,Y) &\leftarrow atArea1(X,Y),atArea3(Y,X) \\
-	target(X,Y) &\leftarrow atArea1(X,Y) \\    
-	target(X,Y) &\leftarrow atArea2(X,Y) \\    
-	target(X,Y) &\leftarrow atArea4(X,Y),atArea6(Y,X) \\
-	target(X,Y) &\leftarrow atArea5(X,Y),atArea7(Y,X) \\
-	target(X,Y) &\leftarrow atArea5(X,Y) \\    
-	target(X,Y) &\leftarrow atArea6(X,Y) \\
-	target(X,Y) &\leftarrow pred1(X,Y) \\
-\end{align*}
-
-
-
-
-\subsection{Chaining}
-\cite{dILP} supports predicate invention.
-
-
-\section{Experiments}
-
-Using the baseline $\alpha$ILP, the nearby concept test accuracy is upto xxx, after xxx iterations.
-
-
-
-
-
-\section{Modifications}
-
-Modifying the template --- including but not limited to: adjusting
-margins, typeface sizes, line spacing, paragraph and list definitions,
-and the use of the \verb|\vspace| command to manually adjust the
-vertical spacing between elements of your work --- is not allowed.
-
-\section{Template parameters}
-
-There are a number of template
-parameters which modify some part of the \verb|ceurart| document class.
-This parameters are enclosed in square
-brackets and are a part of the \verb|\documentclass| command:
-\begin{lstlisting}
-  \documentclass[parameter]{ceurart}
-\end{lstlisting}
-
-Frequently-used parameters, or combinations of parameters, include:
-\begin{itemize}
-\item \verb|twocolumn| : Two column layout.
-\item \verb|hf| : Enable header and footer\footnote{You can enable
-    the display of page numbers in the final version of the entire
-    collection. In this case, you should adhere to the end-to-end
-    pagination of individual papers.}.
-\end{itemize}
-
-\section{Front matter}
-
-\subsection{Title Information}
-
-The titles of papers should be either all use the emphasizing
-capitalized style or they should all use the regular English (or
-native language) style. It does not make a good impression if you or
-your authors mix the styles.
-
-Use the \verb|\title| command to define the title of your work. Do not
-insert line breaks in your title.
-
-\subsection{Title variants}
-
-\verb|\title| command have the below options:
-\begin{itemize}
-\item \verb|title|: Document title. This is default option. 
-\begin{lstlisting}
-\title[mode=title]{This is a title}
-\end{lstlisting}
-You can just omit it, like as follows:
-\begin{lstlisting}
-\title{This is a title}
-\end{lstlisting}
-
-\item \verb|alt|: Alternate title.
-\begin{lstlisting}
-\title[mode=alt]{This is a alternate title}
-\end{lstlisting}
-
-\item \verb|sub|: Sub title.
-\begin{lstlisting}
-\title[mode=sub]{This is a sub title}
-\end{lstlisting}
-You can just use \verb|\subtitle| command, as follows:
-\begin{lstlisting}
-\subtitle{This is a sub title}
-\end{lstlisting}
-
-\item \verb|trans|: Translated title.
-\begin{lstlisting}
-\title[mode=trans]{This is a translated title}
-\end{lstlisting}
-
-\item \verb|transsub|: Translated sub title.
-\begin{lstlisting}
-\title[mode=transsub]{This is a translated sub title}
-\end{lstlisting}
-\end{itemize}
-
-\subsection{Authors and Affiliations}
-
-Each author must be defined separately for accurate metadata
-identification. Multiple authors may share one affiliation. Authors'
-names should not be abbreviated; use full first names wherever
-possible. Include authors' e-mail addresses whenever possible.
-
-\verb|\author| command have the below options: 
-
-\begin{itemize}
-\item \verb|style| : Style of author name (chinese)
-\item \verb|prefix| : Prefix
-\item \verb|suffix| : Suffix
-\item \verb|degree| : Degree
-\item \verb|role| : Role
-\item \verb|orcid| : ORCID
-\item \verb|email| : E-mail
-\item \verb|url| : URL
-\end{itemize}
-
-Author names can have some kinds of marks and notes:
-\begin{itemize}
-\item affiliation mark: \verb|\author[<num>]|.
-\end{itemize}
-
-The author names and affiliations could be formatted in two ways:
-\begin{enumerate}
-\item Group the authors per affiliation.
-\item Use an explicit mark to indicate the affiliations.
-\end{enumerate}
-
-Author block example:
-\begin{lstlisting}
-\author[1,2]{Author Name}[%
-    prefix=Prof.,
-    degree=D.Sc.,
-    role=Researcher,
-    orcid=0000-0000-000-0000,
-    email=name@example.com,
-    url=https://name.example.com
-]
-
-\address[1]{Affiliation #1}
-\address[2]{Affiliation #2}
-\end{lstlisting}
-
-\subsection{Abstract and Keywords}
-
-Abstract shall be entered in an environment that starts
-with \verb|\begin{abstract}| and ends with
-\verb|\end{abstract}|. 
-
-\begin{lstlisting}
-\begin{abstract}
-  This is an abstract.
-\end{abstract}
-\end{lstlisting}
-
-The key words are enclosed in a \verb|keywords|
-environment. Use \verb|\sep| to separate keywords.
-
-\begin{lstlisting}
-\begin{keywords}
-  First keyword \sep 
-  Second keyword \sep 
-  Third keyword \sep 
-  Fourth keyword
-\end{keywords}
-\end{lstlisting}
-
-At the end of front matter add \verb|\maketitle| command.
-
-\subsection{Various Marks in the Front Matter}
-
-The front matter becomes complicated due to various kinds
-of notes and marks to the title and author names. Marks in
-the title will be denoted by a star ($\star$) mark;
-footnotes are denoted by super scripted Arabic numerals,
-corresponding author by an Conformal asterisk (*) mark.
-
-\subsubsection{Title marks}
-
-Title mark can be entered by the command, \verb|\tnotemark[<num>]|
-and the corresponding text can be entered with the command
-\verb|\tnotetext[<num>]{<text>}|. An example will be:
-
-\begin{lstlisting}
-\title{A better way to format your document for CEUR-WS}
-
-\tnotemark[1]
-\tnotetext[1]{You can use this document as the template for preparing your
-  publication. We recommend using the latest version of the ceurart style.}
-\end{lstlisting}
-
-\verb|\tnotemark| and \verb|\tnotetext| can be anywhere in
-the front matter, but should be before \verb|\maketitle| command.
-
-\subsubsection{Author marks}
-
-Author names can have some kinds of marks and notes:
-\begin{itemize}
-\item footnote mark : \verb|\fnmark[<num>]|
-\item footnote text : \verb|\fntext[<num>]{<text>}|
-\item corresponding author mark : \verb|\cormark[<num>]|
-\item corresponding author text : \verb|\cortext[<num>]{<text>}|
-\end{itemize}
-
-\subsubsection{Other marks}
-
-At times, authors want footnotes which leave no marks in
-the author names. The note text shall be listed as part of
-the front matter notes. Class files provides
-\verb|\nonumnote| for this purpose. The usage
-\begin{lstlisting}
-\nonumnote{<text>}
-\end{lstlisting}
-and should be entered anywhere before the \verb|\maketitle|
-command for this to take effect. 
-
-\section{Sectioning Commands}
-
-Your work should use standard \LaTeX{} sectioning commands:
-\verb|\section|, \verb|\subsection|,
-\verb|\subsubsection|, and
-\verb|\paragraph|. They should be numbered; do not remove
-the numbering from the commands.
-
-Simulating a sectioning command by setting the first word or words of
-a paragraph in boldface or italicized text is not allowed.
-
-\section{Tables}
-
-The ``\verb|ceurart|'' document class includes the ``\verb|booktabs|''
-package --- \url{https://ctan.org/pkg/booktabs} --- for preparing
-high-quality tables.
-
-Table captions are placed \textit{above} the table.
-
-Because tables cannot be split across pages, the best placement for
-them is typically the top of the page nearest their initial cite.  To
-ensure this proper ``floating'' placement of tables, use the
-environment \verb|table| to enclose the table's contents and the
-table caption. The contents of the table itself must go in the
-\verb|tabular| environment, to be aligned properly in rows and
-columns, with the desired horizontal and vertical rules.
-
-Immediately following this sentence is the point at which
-Table~\ref{tab:freq} is included in the input file; compare the
-placement of the table here with the table in the printed output of
-this document.
-
-\begin{table*}
-  \caption{Frequency of Special Characters}
-  \label{tab:freq}
-  \begin{tabular}{ccl}
-    \toprule
-    Non-English or Math&Frequency&Comments\\
-    \midrule
-    \O & 1 in 1,000& For Swedish names\\
-    $\pi$ & 1 in 5& Common in math\\
-    \$ & 4 in 5 & Used in business\\
-    $\Psi^2_1$ & 1 in 40,000& Unexplained usage\\
-  \bottomrule
-\end{tabular}
-\end{table*}
-
-To set a wider table, which takes up the whole width of the page's
-live area, use the environment \verb|table*| to enclose the table's
-contents and the table caption.  As with a single-column table, this
-wide table will ``float'' to a location deemed more
-desirable. Immediately following this sentence is the point at which
-Table~\ref{tab:commands} is included in the input file; again, it is
-instructive to compare the placement of the table here with the table
-in the printed output of this document.
-
-\begin{table}
-  \caption{Some Typical Commands}
-  \label{tab:commands}
-  \begin{tabular}{ccl}
-    \toprule
-    Command &A Number & Comments\\
-    \midrule
-    \texttt{{\char'134}author} & 100& Author \\
-    \texttt{{\char'134}table}& 300 & For tables\\
-    \texttt{{\char'134}table*}& 400& For wider tables\\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\section{Math Equations}
-
-You may want to display math equations in three distinct styles:
-inline, numbered or non-numbered display.  Each of the three are
-discussed in the next sections.
-
-\subsection{Inline (In-text) Equations}
-
-A formula that appears in the running text is called an inline or
-in-text formula.  It is produced by the \verb|math| environment,
-which can be invoked with the usual
-\verb|\begin| \ldots \verb|\end| construction or with
-the short form \verb|$| \ldots \verb|$|. You can use any of the symbols
-and structures, from $\alpha$ to $\omega$, available in
-\LaTeX~\cite{Lamport:LaTeX};
-this section will simply show a few
-examples of in-text equations in context. Notice how this equation:
-\begin{math}
-  \lim_{n\rightarrow \infty} \frac{1}{n} = 0,
-\end{math}
-set here in in-line math style, looks slightly different when
-set in display style.  (See next section).
-
-\subsection{Display Equations}
-
-A numbered display equation---one set off by vertical space from the
-text and centered horizontally---is produced by the \verb|equation|
-environment. An unnumbered display equation is produced by the
-\verb|displaymath| environment.
-
-Again, in either environment, you can use any of the symbols and
-structures available in \LaTeX{}; this section will just give a couple
-of examples of display equations in context.  First, consider the
-equation, shown as an inline equation above:
-\begin{equation}
-  \lim_{n\rightarrow \infty} \frac{1}{n} = 0.
-\end{equation}
-Notice how it is formatted somewhat differently in
-the \verb|displaymath|
-environment.  Now, we'll enter an unnumbered equation:
-\begin{displaymath}
-  S_{n} = \sum_{i=1}^{n} x_{i} ,
-\end{displaymath}
-and follow it with another numbered equation:
-\begin{equation}
-  \lim_{x \to 0} (1 + x)^{1/x} = e
-\end{equation}
-just to demonstrate \LaTeX's able handling of numbering.
-
-\section{Figures}
-
-The ``\verb|figure|'' environment should be used for figures. One or
-more images can be placed within a figure. If your figure contains
-third-party material, you must clearly identify it as such, as shown
-in the example below.
-\begin{figure}
-  \centering
-  \includegraphics[width=\linewidth]{sample-franklin}
-  \caption{1907 Franklin Model D roadster. Photograph by Harris \&
-    Ewing, Inc. [Public domain], via Wikimedia
-    Commons. (\url{https://goo.gl/VLCRBB}).}
-\end{figure}
-
-Your figures should contain a caption which describes the figure to
-the reader. Figure captions go below the figure. Your figures should
-also include a description suitable for screen readers, to
-assist the visually-challenged to better understand your work.
-
-Figure captions are placed below the figure.
-
-
-\section{Introduction}
-
-CEUR-WS's article template provides a consistent \LaTeX{} style for
-use across CEUR-WS publications, and incorporates accessibility and
-metadata-extraction functionality. This document will explain the
-major features of the document class.
-
-If you are new to publishing with CEUR-WS, this document is a valuable
-guide to the process of preparing your work for publication.
-
-The ``\verb|ceurart|'' document class can be used to prepare articles
-for any CEUR-WS publication, and for any stage of publication, from
-review to final ``camera-ready'' copy with {\itshape very} few changes
-to the source.
-
-This class depends on the following packages
-for its proper functioning:
-
-\begin{itemize}
-	\item \verb|natbib.sty| for citation processing;
-	\item \verb|geometry.sty| for margin settings;
-	\item \verb|graphicx.sty| for graphics inclusion;
-	\item \verb|hyperref.sty| optional package if hyperlinking is required in
-	the document;
-	\item \verb|fontawesome5.sty| optional package for bells and whistles.
-\end{itemize}
-
-All the above packages are part of any
-standard \LaTeX{} installation.
-Therefore, the users need not be
-bothered about downloading any extra packages.
-
-
-
-\section{Citations and Bibliographies}
-
-The use of Bib\TeX{} for the preparation and formatting of one's
-references is strongly recommended. Authors' names should be complete
---- use full first names (``Donald E. Knuth'') not initials
-(``D. E. Knuth'') --- and the salient identifying features of a
-reference should be included: title, year, volume, number, pages,
-article DOI, etc.
-
-The bibliography is included in your source document with these two
-commands, placed just before the \verb|\end{document}|
-command:
-\begin{lstlisting}
-\bibliography{bibfile}
-\end{lstlisting}
-where ``\verb|bibfile|'' is the name, without the ``\verb|.bib|''
-suffix, of the Bib\TeX{} file.
-
-
-\subsection{Some examples}
-
-A paginated journal article \cite{Abril07}, an enumerated journal
-article \cite{Cohen07}, a reference to an entire issue
-\cite{JCohen96}, a monograph (whole book) \cite{Kosiur01}, a
-monograph/whole book in a series (see 2a in spec. document)
-\cite{Harel79}, a divisible-book such as an anthology or compilation
-\cite{Editor00} followed by the same example, however we only output
-the series if the volume number is given \cite{Editor00a} (so series
-should not be present since it has no vol. no.), a chapter in a
-divisible book \cite{Spector90}, a chapter in a divisible book in a
-series \cite{Douglass98}, a multi-volume work as book \cite{Knuth97},
-an article in a proceedings (of a conference, symposium, workshop for
-example) (paginated proceedings article) \cite{Andler79}, a
-proceedings article with all possible elements \cite{Smith10}, an
-example of an enumerated proceedings article \cite{VanGundy07}, an
-informally published work \cite{Harel78}, a doctoral dissertation
-\cite{Clarkson85}, a master's thesis: \cite{anisi03}, an online
-document / world wide web resource \cite{Thornburg01, Ablamowicz07,
-  Poker06}, a video game (Case 1) \cite{Obama08} and (Case 2)
-\cite{Novak03} and \cite{Lee05} and (Case 3) a patent
-\cite{JoeScientist001}, work accepted for publication \cite{rous08},
-prolific author \cite{SaeediMEJ10} and \cite{SaeediJETC10}. Other
-cites might contain `duplicate' DOI and URLs (some SIAM articles)
-\cite{Kirschmer:2010:AEI:1958016.1958018}. Multi-volume works as books
-\cite{MR781536} and \cite{MR781537}. A couple of citations with DOIs:
-\cite{2004:ITE:1009386.1010128,Kirschmer:2010:AEI:1958016.1958018}. Online
-citations: \cite{TUGInstmem, Thornburg01, R, UMassCitations}.
-
-\section{Acknowledgments}
-
-Identification of funding sources and other support, and thanks to
-individuals and groups that assisted in the research and the
-preparation of the work should be included in an acknowledgment
-section, which is placed just before the reference section in your
-document.
-
-This section has a special environment:
-\begin{lstlisting}
-\begin{acknowledgments}
-  These are different acknowledgments.
-\end{acknowledgments}
-\end{lstlisting}
-so that the information contained therein can be more easily collected
-during the article metadata extraction phase, and to ensure
-consistency in the spelling of the section heading.
-
-Authors should not prepare this section as a numbered or unnumbered
-\verb|\section|; please use the ``\verb|acknowledgments|'' environment.
-
-\section{Appendices}
-
-If your work needs an appendix, add it before the
-``\verb|\end{document}|'' command at the conclusion of your source
-document.
-
-Start the appendix with the ``\verb|\appendix|'' command:
-\begin{lstlisting}
-\appendix
-\end{lstlisting}
-and note that in the appendix, sections are lettered, not
-numbered. 
-
-%%
-%% The acknowledgments section is defined using the "acknowledgments" environment
-%% (and NOT an unnumbered section). This ensures the proper
-%% identification of the section in the article metadata, and the
-%% consistent spelling of the heading.
-\begin{acknowledgments}
-  Thanks to the developers of ACM consolidated LaTeX styles
-  \url{https://github.com/borisveytsman/acmart} and to the developers
-  of Elsevier updated \LaTeX{} templates
-  \url{https://www.ctan.org/tex-archive/macros/latex/contrib/els-cas-templates}.  
-\end{acknowledgments}
-
-%%
-%% Define the bibliography file to be used
-\bibliography{sample-ceur}
-
-%%
-%% If your work has an appendix, this is the place to put it.
-\appendix
-
-\section{Online Resources}
-
-
-The sources for the ceur-art style are available via
-\begin{itemize}
-\item \href{https://github.com/yamadharma/ceurart}{GitHub},
-% \item \href{https://www.overleaf.com/project/5e76702c4acae70001d3bc87}{Overleaf},
-\item
-  \href{https://www.overleaf.com/latex/templates/template-for-submissions-to-ceur-workshop-proceedings-ceur-ws-dot-org/pkfscdkgkhcq}{Overleaf
-    template}.
-\end{itemize}
-
+	
+	\begin{table}
+		\centering
+		\caption{Experiment result on 2D Kandinsky Patterns and 3D Kandinsky Patterns. The dataset of each experiment has 64 PN pairs. Batch size is 8. All the experiments are tested on a single NVIDIA A100 GPU. }
+		\label{tab:pi-result}
+		\begin{tabular}{c|c|c|c|c|c|c|c|c}
+			\hline
+			\toprule
+			\multirow{2}*{Dataset} & \multirow{2}*{Patterns} &  \multirow{2}*{Iterations} &\multicolumn{2}{c|}{Times} & \multicolumn{2}{c|}{Accuracy} & \multicolumn{2}{c}{\# of Ne-Preds} \\
+			\cline{4-9}
+			& & & $ \alpha$ILP & NeSy-$ \pi $ &$ \alpha$ILP & NeSy-$ \pi $&$ \alpha$ILP & NeSy-$ \pi $\\
+			\hline
+			\multirow{4}*{2D KP} &
+			red-triangle &	3  & 0 	    & & & & 	0	    &  4           \\
+			&two-pairs   & 	2	& 	0 	& & & & 0	& 3	        \\
+			&check-mark &		& 	0 	& & & & 0	&  	     \\
+			&cross-mark &		& 	0 	& & & & 0	&  	       \\
+			\hline
+			\multirow{4}*{3D KP} &
+			three same & 2  & 0 	    & & &  & 	0	    &       1      \\
+			&two-pairs  & 2		& 	0 	& & & & 0	& 	3        \\
+			&cross mark  & 	2	& 	0 	& & & & 0	& 	   3     \\
+			&check mark  & 	1	& 	0 	& & & & 0	& 	     2   \\
+			\bottomrule
+		\end{tabular}
+	\end{table}
+	
+	
+	
+	\section{Related Work}
+	Inductive Logic Programming~\cite{Muggleton91,Muggleton95,Nienhuys97,Cropper20} has emerged at the intersection of machine learning and logic programming. Many ILP frameworks have been developed, e.g., FOIL~\cite{Quinlan90}, Progol~\cite{Muggleton95}, ILASP~\cite{ILASP}, Metagol~\cite{metagol,Cropper2019LearningHL}, and Popper~\cite{popper}.
+	
+	Although predicate invention has been proposed since 1988 by \cite{MUGGLETON1988339}, it is always be considered as a major challenge. Most ILP system do not supports PI, including classic systems like Progol \cite{Muggleton1995InverseEA}, TILDE\cite{BLOCKEEL1998285} and modern system such as ATOM \cite{atom}, LFIT \cite{LFIT}.
+	
+	Some works have been proposed for PI systems. 
+	Predicate Invention (PI) has been addressed~\cite{Stahl93PI,aAthakravi12PI,Cropper2019LearningHL,Hocquette20ijcaiPI,Kok2007StatisticalPI,KramerAustrian2007PI,Cropper_Morel_Muggleton_2020aaaiPI,Cropper21PI}. \hk{TODO: split}
+	However, none of these are focus on visual images and learning logical patterns existing in the visual scenes. 
+	\cite{pilff} is an approach for predicate invention, which generate constrains from inconsistent hypothesis and further be used for pruning all the similar clauses.
+	Several system \cite{Evans2018}, \cite{kaminski_eiter_inoue_2018} uses meta-rules as templates for new predicates invention. 
+	$ \alpha $ILP (citation?) supports visual image as input but require background knowledge during the reasoning.
+	
+	
+	\section{Conclusion}
+	
+	In this paper, we proposed an approach for Neural-Symbolic Predicate Invention. NeSy-PI is able to find the new knowledge and summarize it as new predicates, thus it requires less background knowledge for reasoning.
+	In our experiment, we show that our PI model can successfully find the target program given only basic neural perception results and relevant constants, no further background knowledge is required. We also show our efficient prune strategy for predicate searching, the searching result is acquired faster and still sound.
+	\appendix
+	\section{Experiment details on 3DKP}
+	
+	%\begin{lstlisting}[language=Prolog, mathescape]
+	\begin{figure}[t]
+		\centering
+		\begin{lstlisting}[language=Prolog,  style=Prolog-pygsty]
+			
+			(three same)
+			kp(X):-in(O1,X),in(O2,X),in(O3,X),inv_pred2(O1,O2,O3).
+			inv_pred2(O1,O2,O3):-color(O1,blue),color(O2,blue),color(O3,blue),
+			in(O1,X),in(O2,X),in(O3,X),shape(O1,cube),shape(O2,cube),shape(O3,cube).
+			inv_pred2(O1,O2,O3):-color(O1,blue),color(O2,blue),color(O3,blue),in(O1,X),
+			in(O2,X),in(O3,X),shape(O1,sphere),shape(O2,sphere),shape(O3,sphere).
+			inv_pred2(O1,O2,O3):-color(O1,green),color(O2,green),color(O3,green),in(O1,X),
+			in(O2,X),in(O3,X),shape(O1,cube),shape(O2,cube),shape(O3,cube).
+			inv_pred2(O1,O2,O3):-color(O1,green),color(O2,green),color(O3,green),in(O1,X),
+			in(O2,X),in(O3,X),shape(O1,sphere),shape(O2,sphere),shape(O3,sphere).
+			inv_pred2(O1,O2,O3):-color(O1,pink),color(O2,pink),color(O3,pink),in(O1,X),
+			in(O2,X),in(O3,X),shape(O1,cube),shape(O2,cube),shape(O3,cube).
+			inv_pred2(O1,O2,O3):-color(O1,pink),color(O2,pink),color(O3,pink),in(O1,X),
+			in(O2,X),in(O3,X),shape(O1,sphere),shape(O2,sphere),shape(O3,sphere).
+			
+			
+			(two pairs)
+			kp(X):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),inv_pred30(O1,O2,O3,O4),
+			inv_pred7(O3,O4).
+			inv_pred30(O1,O2,O3,O4):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),inv_pred2(O1,O2),
+			inv_pred2(O3,O4),inv_pred7(O1,O2).
+			inv_pred7(O1,O2):-in(O1,X),in(O2,X),shape(O1,cube),shape(O2,cube).
+			inv_pred7(O1,O2):-in(O1,X),in(O2,X),shape(O1,sphere),shape(O2,sphere).
+			inv_pred2(O1,O2):-color(O1,blue),color(O2,blue),in(O1,X),in(O2,X).
+			inv_pred2(O1,O2):-color(O1,green),color(O2,green),in(O1,X),in(O2,X).
+			inv_pred2(O1,O2):-color(O1,pink),color(O2,pink),in(O1,X),in(O2,X).
+			
+			(cross mark)
+			kp(X):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),in(O5,X),inv_pred15(O1,O2,O3,O4,O5).
+			inv_pred3(O2,O3,O4,O5):-in(O2,X),in(O3,X),in(O4,X),in(O5,X),rho(O2,O5,rho2),
+			rho(O3,O4,rho2).
+			inv_pred6(O1,O3,O4,O5):-in(O1,X),in(O3,X),in(O4,X),in(O5,X),
+			inv_pred3(O1,O3,O4,O5),phi(O3,O5,phi6),rho(O3,O5,rho1).
+			inv_pred15(O1,O2,O3,O4,O5):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),in(O5,X),
+			inv_pred6(O2,O3,O4,O5),shape(O1,cube),shape(O2,cube),shape(O3,cube).
+			inv_pred15(O1,O2,O3,O4,O5):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),in(O5,X),
+			inv_pred6(O2,O3,O4,O5),shape(O1,sphere),shape(O2,sphere),shape(O3,sphere).
+			
+			(check mark)
+			kp(X):-in(O1,X),in(O2,X),in(O3,X),in(O4,X),in(O5,X),inv_pred3(O1,O2,O3,O5),
+			inv_pred4(O2,O4,O5).
+			inv_pred3(O1,O2,O3,O5):-in(O1,X),in(O2,X),in(O3,X),in(O5,X),rho(O1,O2,rho0),
+			rho(O3,O5,rho0).
+			inv_pred4(O1,O2,O5):-in(O1,X),in(O2,X),in(O5,X),rho(O1,O2,rho0),rho(O1,O5,rho0).
+		\end{lstlisting}
+		\label{fig:3DKP_learned_clauses}
+		\caption{Learned rules by NeSy-$\pi$ on 3D Kandinsky Pattern scenes.}
+	\end{figure}
+	
+	
+	
+	
+	
+	
+	
+	\bibliography{sample-ceur}
+	
+	
 \end{document}
 
 %%
