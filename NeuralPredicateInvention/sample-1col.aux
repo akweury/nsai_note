@@ -1,13 +1,16 @@
 \relax 
+\providecommand\hyper@newdestlabel[2]{}
 \providecommand*\new@tpo@label[2]{}
 \bibstyle{elsarticle-num-names}
-\providecommand\hyper@newdestlabel[2]{}
 \providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
 \HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldcontentsline\contentsline
+\gdef\contentsline#1#2#3#4{\oldcontentsline{#1}{#2}{#3}}
 \global\let\oldnewlabel\newlabel
 \gdef\newlabel#1#2{\newlabelxx{#1}#2}
 \gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
 \AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\contentsline\oldcontentsline
 \let\newlabel\oldnewlabel
 \fi}
 \fi}
@@ -29,22 +32,73 @@
 \urlauthor{http://conceptbase.sourceforge.net/mjf/}{Manfred Jeusfeld}
 \orcidauthor{0000-0002-9421-8566}{Manfred Jeusfeld}
 \csgdef{mark@fnau3}{1}
-\BKM@entry{id=1,dest={73656374696F6E2E31},srcline={342}}{5C3337365C3337375C303030315C3030305C3034305C303030495C3030306E5C303030745C303030725C3030306F5C303030645C303030755C303030635C303030745C303030695C3030306F5C3030306E}
+\BKM@entry{id=1,dest={73656374696F6E2E31},srcline={340}}{5C3337365C3337375C303030315C3030305C3034305C303030495C3030306E5C303030745C303030725C3030306F5C303030645C303030755C303030635C303030745C303030695C3030306F5C3030306E}
 \citation{Muggleton91,Nienhuys97,Cropper20}
 \citation{pi1988}
-\citation{Evans2018,Shindo2023alphailp}
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Comparison of language requirement between NeSy-ILP and NeSy-$ \pi $. Meaning of abbreviations in the table: Const-Constant. BK-Background Knowledge. Ne-Pred-Neural Predicate.\textcolor {OliveGreen}{[where to put this table? \textsc  {--Jing}]} \textcolor {red}{[besides Fig 1 as before \textsc  {--Dev}]}}}{1}{table.1}\protected@file@percent }
-\newlabel{tab:ilp-pi-compare}{{1}{1}{Comparison of language requirement between NeSy-ILP and NeSy-$ \pi $. Meaning of abbreviations in the table: Const-Constant. BK-Background Knowledge. Ne-Pred-Neural Predicate.\js {where to put this table?} \dd {besides Fig 1 as before}}{table.1}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
+\citation{Evans2018,Shindo2023alphailp}
 \@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces A logic Pattern in 3D scenes can be learned by Neural-Symbolic ILP system. \textbf  {Left}: Positive images on the first row, negative images on the second row. The truth pattern is: a blue sphere either locate on the left side of a green sphere or locate on the right side of a green cube. \textbf  {Right}: Comparison of language requirement between NeSy-ILP and NeSy-$ \pi $. Meaning of abbreviations in the table: Const-Constant. BK-Background Knowledge. Ne-Pred-Neural Predicate. B-Blue, G-Green,Sp-Sphere, Cu-Cube. }}{2}{figure.1}\protected@file@percent }
 \newlabel{fig:intro}{{1}{2}{A logic Pattern in 3D scenes can be learned by Neural-Symbolic ILP system. \textbf {Left}: Positive images on the first row, negative images on the second row. The truth pattern is: a blue sphere either locate on the left side of a green sphere or locate on the right side of a green cube. \textbf {Right}: Comparison of language requirement between NeSy-ILP and NeSy-$ \pi $. Meaning of abbreviations in the table: Const-Constant. BK-Background Knowledge. Ne-Pred-Neural Predicate. B-Blue, G-Green,Sp-Sphere, Cu-Cube}{figure.1}{}}
-\newlabel{fig:intro-hide}{{1}{2}{Introduction}{figure.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces A logic Pattern in 3D scenes can be learned by Neural-Symbolic ILP system. Positive images on the first row, negative images on the second row. The truth pattern is: a blue sphere either locate on the left side of a green sphere or locate on the right side of a green cube.}}{2}{figure.2}\protected@file@percent }
 \citation{}
-\BKM@entry{id=2,dest={73656374696F6E2E32},srcline={474}}{5C3337365C3337375C303030325C3030305C3034305C303030465C303030695C303030725C303030735C303030745C3030302D5C3030306F5C303030725C303030645C303030655C303030725C3030305C3034305C3030304C5C3030306F5C303030675C303030695C303030635C3030305C3034305C303030615C3030306E5C303030645C3030305C3034305C303030495C3030306E5C303030645C303030755C303030635C303030745C303030695C303030765C303030655C3030305C3034305C3030304C5C3030306F5C303030675C303030695C303030635C3030305C3034305C303030505C303030725C3030306F5C303030675C303030725C303030615C3030306D5C3030306D5C303030695C3030306E5C30303067}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces \textbf  {NeSy-$\pi $ architecture.} NeSy-$\pi $ invents relational concepts given visual scenes. The invented predicates are fed into a NeSy-ILP solver to learn classification rules. NeSy-ILP solver generates candidates of rules using given predicates, performs differentiable reasoning using weighted clauses, and optimize the clause weights by gradient descent. To this end, the classification rules can be composed efficiently using the invented predicates. (Best viewed in color) \textcolor {Apricot}{[first draft, should be improved \textsc  {--HK}]} \textcolor {Apricot}{[do we have the opposite arrow: NeSy-ILP -> NeSy-pi in the system? \textsc  {--HK}]}}}{3}{figure.3}\protected@file@percent }
-\newlabel{fig:nesypi}{{3}{3}{\textbf {NeSy-$\pi $ architecture.} NeSy-$\pi $ invents relational concepts given visual scenes. The invented predicates are fed into a NeSy-ILP solver to learn classification rules. NeSy-ILP solver generates candidates of rules using given predicates, performs differentiable reasoning using weighted clauses, and optimize the clause weights by gradient descent. To this end, the classification rules can be composed efficiently using the invented predicates. (Best viewed in color) \hk {first draft, should be improved} \hk {do we have the opposite arrow: NeSy-ILP -> NeSy-pi in the system?}}{figure.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {2}First-order Logic and Inductive Logic Programming}{3}{section.2}\protected@file@percent }
+\BKM@entry{id=2,dest={73656374696F6E2E32},srcline={437}}{5C3337365C3337375C303030325C3030305C3034305C303030465C303030695C303030725C303030735C303030745C3030302D5C3030306F5C303030725C303030645C303030655C303030725C3030305C3034305C3030304C5C3030306F5C303030675C303030695C303030635C3030305C3034305C303030615C3030306E5C303030645C3030305C3034305C303030495C3030306E5C303030645C303030755C303030635C303030745C303030695C303030765C303030655C3030305C3034305C3030304C5C3030306F5C303030675C303030695C303030635C3030305C3034305C303030505C303030725C3030306F5C303030675C303030725C303030615C3030306D5C3030306D5C303030695C3030306E5C30303067}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces \textbf  {NeSy-$\pi $ architecture.} NeSy-$\pi $ invents relational concepts given visual scenes. The invented predicates are fed into a NeSy-ILP solver to learn classification rules. NeSy-ILP solver generates candidates of rules using given predicates, performs differentiable reasoning using weighted clauses, and optimize the clause weights by gradient descent. To this end, the classification rules can be composed efficiently using the invented predicates. (Best viewed in color) \leavevmode {\color  {Apricot}[first draft, should be improved \textsc  {--HK}]} \leavevmode {\color  {Apricot}[do we have the opposite arrow: NeSy-ILP -> NeSy-pi in the system? \textsc  {--HK}]} \leavevmode {\color  {OliveGreen}[Nope, the arrow that can point to NeSy-PI is from extended clauses, clauses are evaluated by NSFR first, then mapped to four score map, then good ones clustered as new predicates. \textsc  {--Jing}]} }}{3}{figure.2}\protected@file@percent }
+\newlabel{fig:nesypi}{{2}{3}{\textbf {NeSy-$\pi $ architecture.} NeSy-$\pi $ invents relational concepts given visual scenes. The invented predicates are fed into a NeSy-ILP solver to learn classification rules. NeSy-ILP solver generates candidates of rules using given predicates, performs differentiable reasoning using weighted clauses, and optimize the clause weights by gradient descent. To this end, the classification rules can be composed efficiently using the invented predicates. (Best viewed in color) \hk {first draft, should be improved} \hk {do we have the opposite arrow: NeSy-ILP -> NeSy-pi in the system?} \js {Nope, the arrow that can point to NeSy-PI is from extended clauses, clauses are evaluated by NSFR first, then mapped to four score map, then good ones clustered as new predicates.}}{figure.2}{}}
 \citation{Evans2018,Shindo21}
 \citation{Shindo2023alphailp}
-\BKM@entry{id=3,dest={73656374696F6E2E33},srcline={532}}{5C3337365C3337375C303030335C3030305C3034305C3030304E5C303030655C303030755C303030725C3030306F5C3030302D5C303030535C303030795C3030306D5C303030625C3030306F5C3030306C5C303030695C303030635C3030305C3034305C303030505C303030725C303030655C303030645C303030695C303030635C303030615C303030745C303030655C3030305C3034305C303030495C3030306E5C303030765C303030655C3030306E5C303030745C303030695C3030306F5C3030306E5C3030303A5C3030305C3034305C3030304E5C303030655C303030535C303030795C3030302D5C3030305C3034305C3030335C333030}
+\@writefile{toc}{\contentsline {section}{\numberline {2}First-order Logic and Inductive Logic Programming}{4}{section.2}\protected@file@percent }
+\BKM@entry{id=3,dest={73656374696F6E2E33},srcline={496}}{5C3337365C3337375C303030335C3030305C3034305C3030304E5C303030655C303030755C303030725C3030306F5C3030302D5C303030535C303030795C3030306D5C303030625C3030306F5C3030306C5C303030695C303030635C3030305C3034305C303030505C303030725C303030655C303030645C303030695C303030635C303030615C303030745C303030655C3030305C3034305C303030495C3030306E5C303030765C303030655C3030306E5C303030745C303030695C3030306F5C3030306E5C3030303A5C3030305C3034305C3030304E5C303030655C303030535C303030795C3030302D5C3030305C3034305C3030335C333030}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces \textbf  {The workflow of NeSy-$\pi $.} Given language $\mathcal  {L}$ and dataset $\mathcal  {D}$, NeSy-$\pi $ produces enriched language $\mathcal  {L}^*$ by inventing new predicates. $\mathcal  {L}$ contains premitive predicates, and $\mathcal  {D}$ consists of pairs of positive and negative visual scenes. (Best viewed in color) \leavevmode {\color  {Apricot}[maybe in wrapfigure \textsc  {--HK}]} }}{5}{figure.3}\protected@file@percent }
+\newlabel{fig:nesypi_flow}{{3}{5}{\textbf {The workflow of NeSy-$\pi $.} Given language $\mathcal {L}$ and dataset $\mathcal {D}$, NeSy-$\pi $ produces enriched language $\mathcal {L}^*$ by inventing new predicates. $\mathcal {L}$ contains premitive predicates, and $\mathcal {D}$ consists of pairs of positive and negative visual scenes. (Best viewed in color) \hk {maybe in wrapfigure}}{figure.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Neuro-Symbolic Predicate Invention: NeSy-$ \pi $}{5}{section.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces \textbf  {Scoring strategy in NeSy-$\pi $.} NeSy-$\pi $ takes an input as a pair of positive and negative example $(x_i^+, x_i^-)$, applies the reasoning function $r_\mathcal  {C}$ using clauses $\mathcal  {C}$ to compute a scalar value for each (left). The computed pair of scalar values are casted to a 2D Euclidean scoring space. $f_\mathit  {ness}$ quantifies the necessity of clauses $\mathcal  {C}$ for dataset $\mathcal  {D}$, \emph  {i.e.}\nobreakspace  {}it counts the number of training pairs in $\mathcal  {D}$ whose negative example is not entailed by $\mathcal  {C}$, and $f_\mathit  {suff}$ quantifies the sufficiency of clauses $\mathcal  {C}$ for dataset $\mathcal  {D}$, \emph  {i.e.}\nobreakspace  {}it counts the number of training pairs in $\mathcal  {D}$ whose positive example is entailed by $\mathcal  {C}$ (right). \leavevmode {\color  {Apricot}[first draft, need to be improved \textsc  {--HK}]} }}{6}{figure.4}\protected@file@percent }
+\newlabel{fig:score}{{4}{6}{\textbf {Scoring strategy in NeSy-$\pi $.} NeSy-$\pi $ takes an input as a pair of positive and negative example $(x_i^+, x_i^-)$, applies the reasoning function $r_\mathcal {C}$ using clauses $\mathcal {C}$ to compute a scalar value for each (left). The computed pair of scalar values are casted to a 2D Euclidean scoring space. $f_\mathit {ness}$ quantifies the necessity of clauses $\mathcal {C}$ for dataset $\mathcal {D}$, \ie it counts the number of training pairs in $\mathcal {D}$ whose negative example is not entailed by $\mathcal {C}$, and $f_\mathit {suff}$ quantifies the sufficiency of clauses $\mathcal {C}$ for dataset $\mathcal {D}$, \ie it counts the number of training pairs in $\mathcal {D}$ whose positive example is entailed by $\mathcal {C}$ (right). \hk {first draft, need to be improved}}{figure.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{\nonumberline Initial}{6}{paragraph*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\nonumberline Extend}{6}{paragraph*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\nonumberline Evaluate}{6}{paragraph*.6}\protected@file@percent }
+\BKM@entry{id=4,dest={73656374696F6E2E34},srcline={620}}{5C3337365C3337375C303030345C3030305C3034305C303030455C303030785C303030705C303030655C303030725C303030695C3030306D5C303030655C3030306E5C303030745C303030615C3030306C5C3030305C3034305C303030455C303030765C303030615C3030306C5C303030755C303030615C303030745C303030695C3030306F5C3030306E}
+\@writefile{toc}{\contentsline {paragraph}{\nonumberline Pruning}{7}{paragraph*.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\nonumberline Cluster}{7}{paragraph*.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\nonumberline Inventing}{7}{paragraph*.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\nonumberline Finish}{7}{paragraph*.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Experimental Evaluation}{7}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\nonumberline A1}{7}{paragraph*.16}\protected@file@percent }
+\BKM@entry{id=5,dest={73656374696F6E2E35},srcline={757}}{5C3337365C3337375C303030355C3030305C3034305C303030525C303030655C3030306C5C303030615C303030745C303030655C303030645C3030305C3034305C303030575C3030306F5C303030725C3030306B}
+\citation{Muggleton91,Muggleton95,Nienhuys97,Cropper20}
+\citation{Quinlan90}
+\citation{Muggleton95}
+\citation{ILASP}
+\citation{metagol,Cropper2019LearningHL}
+\citation{popper}
+\@writefile{toc}{\contentsline {paragraph}{\nonumberline A2}{8}{paragraph*.18}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\nonumberline A3}{8}{paragraph*.20}\protected@file@percent }
+\citation{MUGGLETON1988339}
+\citation{Muggleton1995InverseEA}
+\citation{BLOCKEEL1998285}
+\citation{atom}
+\citation{LFIT}
+\citation{Stahl93PI,aAthakravi12PI,Cropper2019LearningHL,Hocquette20ijcaiPI,Kok2007StatisticalPI,KramerAustrian2007PI,Cropper_Morel_Muggleton_2020aaaiPI,Cropper21PI}
+\citation{pilff}
+\citation{Evans2018}
+\citation{kaminski_eiter_inoue_2018}
+\BKM@entry{id=6,dest={73656374696F6E2E36},srcline={770}}{5C3337365C3337375C303030365C3030305C3034305C303030435C3030306F5C3030306E5C303030635C3030306C5C303030755C303030735C303030695C3030306F5C3030306E}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Position neural predicates based on polar coordinate system. \leavevmode {\color  {Apricot}[texts should be bigger \textsc  {--HK}]}}}{9}{figure.5}\protected@file@percent }
+\newlabel{fig:pos-pred-explain}{{5}{9}{Position neural predicates based on polar coordinate system. \hk {texts should be bigger}}{figure.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces 3D Kandinsky Patterns. \textbf  {Three Same}: This pattern always have 3 objects inside, three of them has same color and same shape. \textbf  {Two Pairs}: This pattern always have 4 objects inside, two of them has same color and same shape. The other two also have same color and same shape. \textbf  {Shape in Shape}: this pattern always have 4 objects with same shape inside, if they are cubes, their positions form a shape of square; if they are spheres, their positions form a shape of triangle. \textbf  {Check Mark}: this pattern always have 5 objects, the position of 5 objects consists of an outline of a check mark.}}{9}{figure.6}\protected@file@percent }
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(a)}{\ignorespaces {Three Same}}}{9}{figure.6}\protected@file@percent }
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(b)}{\ignorespaces {Two Pairs}}}{9}{figure.6}\protected@file@percent }
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(c)}{\ignorespaces {Shape in Shape}}}{9}{figure.6}\protected@file@percent }
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(d)}{\ignorespaces {Check Mark}}}{9}{figure.6}\protected@file@percent }
+\newlabel{fig:3DKP-patterns}{{6}{9}{3D Kandinsky Patterns. \textbf {Three Same}: This pattern always have 3 objects inside, three of them has same color and same shape. \textbf {Two Pairs}: This pattern always have 4 objects inside, two of them has same color and same shape. The other two also have same color and same shape. \textbf {Shape in Shape}: this pattern always have 4 objects with same shape inside, if they are cubes, their positions form a shape of square; if they are spheres, their positions form a shape of triangle. \textbf {Check Mark}: this pattern always have 5 objects, the position of 5 objects consists of an outline of a check mark}{figure.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Related Work}{9}{section.5}\protected@file@percent }
+\newlabel{fig:rules_cross_3DKP}{{4}{10}{A3}{lstnumber.-3.14}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Learned rules by NeSy-$\pi $ on Cross pattern in 3D Kandinsky Pattern scenes.}}{10}{figure.7}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Experiment result on 2D Kandinsky Patterns and 3D Kandinsky Patterns. The dataset of each experiment has 64 PN pairs. $\alpha $ and $ \pi $ denote $\alpha $ILP system and NeSy-$\pi $ respectively. The numbers in the bracket of last column represent the number of invented predicates that are used in the target clauses.}}{10}{table.1}\protected@file@percent }
+\newlabel{tab:pi-result}{{1}{10}{Experiment result on 2D Kandinsky Patterns and 3D Kandinsky Patterns. The dataset of each experiment has 64 PN pairs. $\alpha $ and $ \pi $ denote $\alpha $ILP system and NeSy-$\pi $ respectively. The numbers in the bracket of last column represent the number of invented predicates that are used in the target clauses}{table.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{10}{section.6}\protected@file@percent }
+\BKM@entry{id=7,dest={617070656E6469782E41},srcline={777}}{5C3337365C3337375C303030415C3030305C3034305C3030304E5C303030655C303030535C303030795C3030302D5C3030335C3330305C3030305C3034305C303030615C3030306C5C303030675C3030306F5C303030725C303030695C303030745C303030685C3030306D}
+\BKM@entry{id=8,dest={617070656E6469782E42},srcline={807}}{5C3337365C3337375C303030425C3030305C3034305C303030455C303030785C303030705C303030655C303030725C303030695C3030306D5C303030655C3030306E5C303030745C3030305C3034305C303030645C303030655C303030745C303030615C303030695C3030306C5C30303073}
+\@writefile{toc}{\contentsline {section}{\numberline {A}NeSy-$\pi $ algorithm}{11}{appendix.A}\protected@file@percent }
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces NeSy-$ \pi $}}{11}{algorithm.1}\protected@file@percent }
+\newlabel{alg:pi}{{1}{11}{NeSy-$\pi $ algorithm}{algorithm.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {B}Experiment details}{11}{appendix.B}\protected@file@percent }
+\BKM@entry{id=9,dest={73756273656374696F6E2E422E31},srcline={809}}{5C3337365C3337375C303030425C3030302E5C303030315C3030305C3034305C303030325C303030445C3030305C3034305C3030304B5C30303050}
